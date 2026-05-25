@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Config/">
+    <File Path="../CHANGELOG.md" />
+    <File Path="../README.md" />
+    <File Path="global.json" />
+  </Folder>
+  <Project Path="Credfeto.Keys.DataStore.Interfaces/Credfeto.Keys.DataStore.Interfaces.csproj" />
+  <Project Path="Credfeto.Keys.DataStore.FileSystem/Credfeto.Keys.DataStore.FileSystem.csproj" />
+  <Project Path="Credfeto.Keys.DataStore.FileSystem.Tests/Credfeto.Keys.DataStore.FileSystem.Tests.csproj" />
+  <Project Path="Credfeto.Keys.Server/Credfeto.Keys.Server.csproj" />
+  <Project Path="Credfeto.Keys.Server.Tests/Credfeto.Keys.Server.Tests.csproj" />
+</Solution>

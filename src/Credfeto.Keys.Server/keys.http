@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:8080
+
+### Ping
+GET {{baseUrl}}/ping
+
+### Get keys for a user on a host
+GET {{baseUrl}}/keys/server1.example.com/mark
+
+### Add a key for a user on a host
+POST {{baseUrl}}/keys/server1.example.com/mark
+Content-Type: text/plain
+
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBcCzNrDr3gvnYGrWO5tAcgVJI7IXPEnGNlZW+UcE7vF mark@laptop
+
+### Remove a key (replace keyId with actual GUID from add response)
+DELETE {{baseUrl}}/keys/server1.example.com/mark/00000000-0000-0000-0000-000000000000

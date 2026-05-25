@@ -1,0 +1,48 @@
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+
+namespace Credfeto.Keys.Server.Helpers;
+
+[SuppressMessage(
+    category: "ReSharper",
+    checkId: "UnusedType.Global",
+    Justification = "Used in exe code. Not possible to unit test."
+)]
+internal static class ApplicationConfigLocator
+{
+    [SuppressMessage(
+        category: "ReSharper",
+        checkId: "UnusedMember.Global",
+        Justification = "Used in exe code. Not possible to unit test."
+    )]
+    public static string ConfigurationFilesPath { get; } = LookupConfigurationFilesPath();
+
+    private static string LookupConfigurationFilesPath()
+    {
+        string? path = LookupAppSettingsLocationByAssemblyName();
+
+        if (path is null)
+        {
+            return Environment.CurrentDirectory;
+        }
+
+        return path;
+    }
+
+    private static string? LookupAppSettingsLocationByAssemblyName()
+    {
+        string location = AppContext.BaseDirectory;
+
+        string? path = Path.GetDirectoryName(location);
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        string appSettings = Path.Combine(path1: path, path2: "appsettings.json");
+
+        return File.Exists(appSettings) ? path : null;
+    }
+}

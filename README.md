@@ -1,12 +1,18 @@
-# cs-template
-C# Template
+# credfeto-ssh-key-server
+
+SSH key server built with .NET 10 and Kestrel. Stores and serves SSH public keys indexed by host and username, providing a public API compatible with `sshd`'s `AuthorizedKeysCommand`.
 
 ## Build Status
 
-| Branch  | Status                                                                                                                                                                                                                                |
-|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| main    | [![Build: Pre-Release](https://github.com/credfeto/cs-template/actions/workflows/build-and-publish-pre-release.yml/badge.svg)](https://github.com/credfeto/cs-template/actions/workflows/build-and-publish-pre-release.yml) |
-| release | [![Build: Release](https://github.com/credfeto/cs-template/actions/workflows/build-and-publish-release.yml/badge.svg)](https://github.com/credfeto/cs-template/actions/workflows/build-and-publish-release.yml)             |
+| Branch  | Status                                                                                                                                                                                                                                              |
+|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| main    | [![Build: Pre-Release](https://github.com/credfeto/credfeto-ssh-key-server/actions/workflows/build-and-publish-pre-release.yml/badge.svg)](https://github.com/credfeto/credfeto-ssh-key-server/actions/workflows/build-and-publish-pre-release.yml) |
+| release | [![Build: Release](https://github.com/credfeto/credfeto-ssh-key-server/actions/workflows/build-and-publish-release.yml/badge.svg)](https://github.com/credfeto/credfeto-ssh-key-server/actions/workflows/build-and-publish-release.yml)             |
+
+## Documentation
+
+- [API Reference](docs/api.md)
+- [Configuration](docs/configuration.md)
 
 ## Changelog
 
