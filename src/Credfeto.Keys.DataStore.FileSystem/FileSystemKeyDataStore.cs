@@ -105,6 +105,22 @@ public sealed class FileSystemKeyDataStore : ISshKeyDataStore
         }
     }
 
+    public async ValueTask<SshPublicKey?> GetKeyByIdAsync(
+        string host,
+        string username,
+        Guid keyId,
+        CancellationToken cancellationToken
+    )
+    {
+        IReadOnlyList<SshPublicKey> keys = await this.GetKeysAsync(
+            host: host,
+            username: username,
+            cancellationToken: cancellationToken
+        );
+
+        return keys.FirstOrDefault(k => k.KeyId == keyId);
+    }
+
     public async ValueTask<bool> RemoveKeyAsync(
         string host,
         string username,

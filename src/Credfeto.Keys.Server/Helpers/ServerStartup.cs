@@ -5,7 +5,9 @@ using System.Net;
 using System.Threading;
 using Credfeto.Keys.DataStore.FileSystem;
 using Credfeto.Keys.DataStore.FileSystem.Config;
+using Credfeto.Keys.Server.Config;
 using Credfeto.Keys.Server.Json;
+using Credfeto.Keys.Server.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -67,12 +69,15 @@ internal static class ServerStartup
 
     private static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
-        IConfigurationSection section = builder.Configuration.GetSection("Keys");
+        IConfigurationSection keysSection = builder.Configuration.GetSection("Keys");
+        IConfigurationSection challengeSection = builder.Configuration.GetSection("Challenge");
 
         builder
-            .Services.Configure<FileSystemKeyStoreOptions>(section)
+            .Services.Configure<FileSystemKeyStoreOptions>(keysSection)
+            .Configure<ChallengeOptions>(challengeSection)
             .AddSingleton<TimeProvider>(TimeProvider.System)
             .AddFileSystemKeyStorage()
+            .AddSingleton<IChallengeService, ChallengeService>()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );

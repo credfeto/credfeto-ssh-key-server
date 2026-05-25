@@ -43,10 +43,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Keys.DataStore.FileSystem\Credfeto.Keys.DataStore.FileSystem.csproj" />
     <ProjectReference Include="..\Credfeto.Keys.DataStore.Interfaces\Credfeto.Keys.DataStore.Interfaces.csproj" />
+    <ProjectReference Include="..\Credfeto.Keys.Server\Credfeto.Keys.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
   </ItemGroup>

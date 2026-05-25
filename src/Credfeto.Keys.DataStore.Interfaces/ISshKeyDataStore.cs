@@ -23,5 +23,12 @@ public interface ISshKeyDataStore
         CancellationToken cancellationToken
     );
 
+    ValueTask<SshPublicKey?> GetKeyByIdAsync(
+        string host,
+        string username,
+        Guid keyId,
+        CancellationToken cancellationToken
+    );
+
     ValueTask<bool> RemoveKeyAsync(string host, string username, Guid keyId, CancellationToken cancellationToken);
 }
