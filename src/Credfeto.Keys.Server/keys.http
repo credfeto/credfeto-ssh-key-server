@@ -1,0 +1,44 @@
+@baseUrl = http://localhost:8080
+
+### Ping
+GET {{baseUrl}}/ping
+
+### Get keys for a user on a host
+GET {{baseUrl}}/keys/server1.example.com/mark
+
+### Step 1: Get a challenge for adding a key
+# @name addChallenge
+GET {{baseUrl}}/keys/server1.example.com/mark/add-challenge
+
+### Step 2: Sign the challenge (run in shell):
+# CHALLENGE="<challenge from step 1>"
+# NAMESPACE="ssh-key-server-v1"
+# printf '%s' "$CHALLENGE" | ssh-keygen -Y sign -f ~/.ssh/id_ed25519 -n "$NAMESPACE" -
+# Copy the -----BEGIN SSH SIGNATURE----- block as the signature below.
+
+### Step 3: Add a key (replace challenge and signature with values from above steps)
+POST {{baseUrl}}/keys/server1.example.com/mark
+Content-Type: application/json
+
+{
+  "key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBcCzNrDr3gvnYGrWO5tAcgVJI7IXPEnGNlZW+UcE7vF mark@laptop",
+  "challenge": "<challenge token from step 1>",
+  "signature": "-----BEGIN SSH SIGNATURE-----\n<base64>\n-----END SSH SIGNATURE-----"
+}
+
+### Step 1: Get a challenge for deleting a key (replace keyId with actual GUID from add response)
+# @name deleteChallenge
+GET {{baseUrl}}/keys/server1.example.com/mark/00000000-0000-0000-0000-000000000000/challenge
+
+### Step 2: Sign the delete challenge (run in shell):
+# CHALLENGE="<challenge from delete step 1>"
+# printf '%s' "$CHALLENGE" | ssh-keygen -Y sign -f ~/.ssh/id_ed25519 -n "ssh-key-server-v1" -
+
+### Step 3: Delete a key
+DELETE {{baseUrl}}/keys/server1.example.com/mark/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "challenge": "<challenge token from delete step 1>",
+  "signature": "-----BEGIN SSH SIGNATURE-----\n<base64>\n-----END SSH SIGNATURE-----"
+}
