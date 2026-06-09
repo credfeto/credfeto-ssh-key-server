@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Credfeto.Keys.DataStore.FileSystem;
 using Credfeto.Keys.DataStore.FileSystem.Config;
@@ -28,23 +30,32 @@ internal static class ServerStartup
 #else
     private const int HTTP_PORT = 8080;
 #endif
+    private const int HTTPS_PORT = 8081;
+    private const int H2_PORT = 0;
 
     public static void SetThreads(int minThreads)
     {
         ThreadPool.GetMinThreads(out int minWorker, out int minIoc);
+        Console.WriteLine($"Min worker threads {minWorker}, Min IOC threads {minIoc}");
 
         if (minWorker < minThreads && minIoc < minThreads)
         {
+            Console.WriteLine($"Setting min worker threads {minThreads}, Min IOC threads {minThreads}");
             ThreadPool.SetMinThreads(workerThreads: minThreads, completionPortThreads: minThreads);
         }
         else if (minWorker < minThreads)
         {
+            Console.WriteLine($"Setting min worker threads {minThreads}, Min IOC threads {minIoc}");
             ThreadPool.SetMinThreads(workerThreads: minThreads, completionPortThreads: minIoc);
         }
         else if (minIoc < minThreads)
         {
+            Console.WriteLine($"Setting min worker threads {minWorker}, Min IOC threads {minThreads}");
             ThreadPool.SetMinThreads(workerThreads: minWorker, completionPortThreads: minThreads);
         }
+
+        ThreadPool.GetMaxThreads(out int maxWorker, out int maxIoc);
+        Console.WriteLine($"Max worker threads {maxWorker}, Max IOC threads {maxIoc}");
     }
 
     public static WebApplication CreateApp(string[] args)
@@ -56,7 +67,7 @@ internal static class ServerStartup
             .ConfigureSettings(configPath)
             .ConfigureServices()
             .ConfigureAppHost()
-            .ConfigureWebHost()
+            .ConfigureWebHost(configPath: configPath)
             .Build();
     }
 
@@ -85,10 +96,18 @@ internal static class ServerStartup
         return builder;
     }
 
-    private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder)
+    private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder, string configPath)
     {
         builder
-            .WebHost.UseKestrel(options: options => SetKestrelOptions(options: options, httpPort: HTTP_PORT))
+            .WebHost.UseKestrel(options: options =>
+                SetKestrelOptions(
+                    options: options,
+                    httpPort: HTTP_PORT,
+                    httpsPort: HTTPS_PORT,
+                    h2Port: H2_PORT,
+                    configurationFilesPath: configPath
+                )
+            )
             .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
             .ConfigureLogging((_, logger) => ConfigureLogging(logger));
 
@@ -142,7 +161,13 @@ internal static class ServerStartup
         return builder;
     }
 
-    private static void SetKestrelOptions(KestrelServerOptions options, int httpPort)
+    private static void SetKestrelOptions(
+        KestrelServerOptions options,
+        int httpPort,
+        int httpsPort,
+        int h2Port,
+        string configurationFilesPath
+    )
     {
         options.DisableStringReuse = false;
         options.AllowSynchronousIO = false;
@@ -150,11 +175,56 @@ internal static class ServerStartup
         options.Limits.MinResponseDataRate = null;
         options.Limits.MinRequestBodyDataRate = null;
 
+        string certFile = Path.Combine(path1: configurationFilesPath, path2: "server.pfx");
+
+        if (httpsPort != 0 && File.Exists(certFile))
+        {
+            Console.WriteLine($"Listening on HTTPS port: {httpsPort}");
+            options.Listen(
+                address: IPAddress.Any,
+                port: httpsPort,
+                configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certFile)
+            );
+        }
+
+        if (h2Port != 0)
+        {
+            Console.WriteLine($"Listening on H2 port: {h2Port}");
+            options.Listen(address: IPAddress.Any, port: h2Port, configure: SetH2ListenOptions);
+        }
+
         Console.WriteLine($"Listening on HTTP port: {httpPort}");
-        options.Listen(
-            address: IPAddress.Any,
-            port: httpPort,
-            configure: static o => o.Protocols = HttpProtocols.Http1
+        options.Listen(address: IPAddress.Any, port: httpPort, configure: SetH1ListenOptions);
+    }
+
+    private static void SetH1ListenOptions(ListenOptions listenOptions)
+    {
+        listenOptions.Protocols = HttpProtocols.Http1;
+    }
+
+    private static void SetH2ListenOptions(ListenOptions listenOptions)
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+    }
+
+    [SuppressMessage(
+        category: "Microsoft.Reliability",
+        checkId: "CA2000:DisposeObjectsBeforeLosingScope",
+        Justification = "Lives for program lifetime"
+    )]
+    [SuppressMessage(
+        category: "SmartAnalyzers.CSharpExtensions.Annotations",
+        checkId: "CSE007:DisposeObjectsBeforeLosingScope",
+        Justification = "Lives for program lifetime"
+    )]
+    private static void SetHttpsListenOptions(ListenOptions listenOptions, string certFile)
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+        X509Certificate2 cert = X509CertificateLoader.LoadPkcs12FromFile(
+            certFile,
+            password: null,
+            keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet
         );
+        listenOptions.UseHttps(cert);
     }
 }

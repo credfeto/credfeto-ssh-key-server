@@ -38,7 +38,10 @@
     <RepositoryUrl>https://github.com/credfeto/credfeto-ssh-key-server</RepositoryUrl>
     <RunAOTCompilation>false</RunAOTCompilation>
     <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <!-- IL2104: ASP.NET Core and framework assemblies are not yet fully
+         trim-annotated; downgrade aggregate trim warning to non-fatal for ILLink (non-AOT) builds. -->
+    <WarningsNotAsErrors>IL2104</WarningsNotAsErrors>
     <TargetFramework>net10.0</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
     <TieredPGO>true</TieredPGO>
@@ -91,6 +94,11 @@
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.25.0.139117" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- IL2104: ASP.NET Core and framework assemblies are not yet fully trim/AOT-annotated;
+         suppress per-assembly aggregate warnings. -->
+    <IlcArg Include="--nowarn:IL2104" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Keys.DataStore.FileSystem\Credfeto.Keys.DataStore.FileSystem.csproj" />
