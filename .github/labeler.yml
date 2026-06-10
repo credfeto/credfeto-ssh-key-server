@@ -10,6 +10,16 @@
  - any: [ 'CHANGELOG.md' ]
 "Config Change":
  - any: [ 'src/**/*.json', '!src/global.json' ]
+"credfeto-keys-datastore-filesystem":
+ - any: [ 'src/Credfeto.Keys.DataStore.FileSystem/**/*' ]
+"credfeto-keys-datastore-filesystem-tests":
+ - any: [ 'src/Credfeto.Keys.DataStore.FileSystem.Tests/**/*' ]
+"credfeto-keys-datastore-interfaces":
+ - any: [ 'src/Credfeto.Keys.DataStore.Interfaces/**/*' ]
+"credfeto-keys-server":
+ - any: [ 'src/Credfeto.Keys.Server/**/*' ]
+"credfeto-keys-server-tests":
+ - any: [ 'src/Credfeto.Keys.Server.Tests/**/*' ]
 "dotnet":
  - any: [ 'src/**/*.csproj' ]
 "Editorconfig":
