@@ -19,6 +19,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - shell.firewall.examples.md open_port_for_private_networks no longer calls firewall-cmd --reload internally; added explicit caller-reload rule to shell.firewall.instructions.md
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
+- SDK - Updated DotNet SDK to 10.0.301
 ### Deprecated
 ### Removed
 ### Deployment Changes
