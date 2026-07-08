@@ -190,6 +190,10 @@ internal static class ServerStartup
                 configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certPath, certPassword: certPassword)
             );
         }
+        else if (httpsPort != 0)
+        {
+            Console.WriteLine("HTTPS disabled: certificate not configured or not found");
+        }
 
         if (h2Port != 0)
         {
