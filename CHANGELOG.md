@@ -10,10 +10,12 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Security
+- Removed private key (server.pfx) from repository — cert path and passphrase are now configurable via Https:CertificatePath and Https:CertificatePassword in appsettings.json; a dev-cert generation script is provided for local setup
 ### Added
 - SSH key server with file system storage for per-host/user authorized public key management
 - Signed challenge-response verification required for adding and deleting SSH keys
 - Restriction to ed25519 and sk-ssh-ed25519 key types only
+- Script (tools/generate-dev-cert.sh) to generate a self-signed TLS certificate for localhost and trust it on Arch Linux and Debian/Ubuntu-based systems
 ### Fixed
 - Corrected broken cross-reference in github-workflows.instructions.md — anchor #visual-indicators updated to #output-helpers to match actual section name in shell-scripts.instructions.md
 - shell.firewall.examples.md open_port_for_private_networks no longer calls firewall-cmd --reload internally; added explicit caller-reload rule to shell.firewall.instructions.md
