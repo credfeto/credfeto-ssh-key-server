@@ -199,11 +199,15 @@ public sealed class FileSystemKeyDataStore : ISshKeyDataStore
                 cancellationToken: cancellationToken
             );
         }
+        catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return null;
+        }
         catch (Exception exception)
         {
             this._logger.FailedToReadKeyFile(filePath: filePath, message: exception.Message, exception: exception);
 
-            return null;
+            throw;
         }
     }
 
