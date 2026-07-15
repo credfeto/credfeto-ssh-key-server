@@ -22,7 +22,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Fix data loss in FileSystemKeyDataStore when the key file is corrupt or unreadable (#16)
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
-- SDK - Updated DotNet SDK to 10.0.301
+- SDK - Updated DotNet SDK to 10.0.302
 ### Deprecated
 ### Removed
 ### Deployment Changes
