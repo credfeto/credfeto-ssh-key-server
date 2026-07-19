@@ -357,7 +357,7 @@ internal static partial class Endpoints
             return false;
         }
 
-        return Base64Regex().IsMatch(value);
+        return Base64Regex().IsMatch(value) && Base64KeyData.TryDecode(value, bytes: out _);
     }
 
     private static bool IsValidHost(string host)
