@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Credfeto.Keys.Server.Crypto;
 
-internal static class SshSigVerifier
+public static class SshSigVerifier
 {
     private const string SshSigBegin = "-----BEGIN SSH SIGNATURE-----";
     private const string SshSigEnd = "-----END SSH SIGNATURE-----";
@@ -126,7 +126,11 @@ internal static class SshSigVerifier
         }
 
         byte[] sigKeyBytes = SshWireReader.ReadStringBytes(pkSpan, ref pkPos);
-        byte[] expectedKeyBytes = Convert.FromBase64String(expectedKeyDataBase64);
+
+        if (!Base64KeyData.TryDecode(expectedKeyDataBase64, bytes: out byte[]? expectedKeyBytes))
+        {
+            return SshSigVerificationResult.InvalidFormat;
+        }
 
         if (!sigKeyBytes.AsSpan().SequenceEqual(expectedKeyBytes))
         {

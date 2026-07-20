@@ -1,6 +1,6 @@
 namespace Credfeto.Keys.Server.Crypto;
 
-internal enum SshSigVerificationResult
+public enum SshSigVerificationResult
 {
     Valid,
     InvalidFormat,
