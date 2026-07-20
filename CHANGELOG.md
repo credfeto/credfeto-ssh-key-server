@@ -21,6 +21,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - shell.firewall.examples.md open_port_for_private_networks no longer calls firewall-cmd --reload internally; added explicit caller-reload rule to shell.firewall.instructions.md
 - Fix data loss in FileSystemKeyDataStore when the key file is corrupt or unreadable (#16)
 - Reject malformed base64 SSH key data with 400 Bad Request instead of an unhandled 500 error (#17)
+- Avoid eagerly allocating a SemaphoreSlim on every AddKey/RemoveKey call in FileSystemKeyDataStore (#19)
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - SDK - Updated DotNet SDK to 10.0.302
