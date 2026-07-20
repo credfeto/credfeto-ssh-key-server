@@ -68,10 +68,7 @@ public sealed class FileSystemKeyDataStore : ISshKeyDataStore
     {
         string filePath = this.BuildKeyFilePath(host: host, username: username);
         string lockKey = BuildLockKey(host: host, username: username);
-        SemaphoreSlim semaphore = this._locks.GetOrAdd(
-            key: lockKey,
-            value: new SemaphoreSlim(initialCount: 1, maxCount: 1)
-        );
+        SemaphoreSlim semaphore = this.GetLock(lockKey);
 
         await semaphore.WaitAsync(cancellationToken);
 
@@ -130,10 +127,7 @@ public sealed class FileSystemKeyDataStore : ISshKeyDataStore
     {
         string filePath = this.BuildKeyFilePath(host: host, username: username);
         string lockKey = BuildLockKey(host: host, username: username);
-        SemaphoreSlim semaphore = this._locks.GetOrAdd(
-            key: lockKey,
-            value: new SemaphoreSlim(initialCount: 1, maxCount: 1)
-        );
+        SemaphoreSlim semaphore = this.GetLock(lockKey);
 
         await semaphore.WaitAsync(cancellationToken);
 
@@ -260,6 +254,16 @@ public sealed class FileSystemKeyDataStore : ISshKeyDataStore
     private string BuildKeyFilePath(string host, string username)
     {
         return Path.Combine(path1: this._basePath, path2: host, path3: username + ".json");
+    }
+
+    private SemaphoreSlim GetLock(string lockKey)
+    {
+        if (this._locks.TryGetValue(key: lockKey, out SemaphoreSlim? semaphore))
+        {
+            return semaphore;
+        }
+
+        return this._locks.GetOrAdd(key: lockKey, new SemaphoreSlim(initialCount: 1, maxCount: 1));
     }
 
     private static string BuildLockKey(string host, string username)
