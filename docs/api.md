@@ -31,7 +31,7 @@ Issues a challenge token that must be signed to prove ownership of the key being
 }
 ```
 
-The challenge is valid for 300 seconds.
+The challenge is valid for 300 seconds. The same namespace and TTL apply to delete challenges (see `GET /keys/{host}/{user}/{keyId}/challenge` below).
 
 ### POST /keys/{host}/{user}
 
@@ -103,29 +103,17 @@ Health check endpoint.
 ## Full add-key flow
 
 ```text
-1. GET /keys/{host}/{user}/add-challenge
-   → { "challenge": "<token>", "namespace": "ssh-key-server-v1", "validUntil": "<iso8601>" }
-
+1. GET /keys/{host}/{user}/add-challenge (see response shape above)
 2. Sign challenge (see "To produce the signature" under POST above)
-
-3. POST /keys/{host}/{user}
-   Content-Type: application/json
-   { "key": "ssh-ed25519 AAAA... comment", "challenge": "$CHALLENGE", "signature": "$SIGNATURE" }
-   → 201 { "keyId": "<uuid>" }
+3. POST /keys/{host}/{user} with { "key", "challenge", "signature" } (see request/response above)
 ```
 
 ## Full delete-key flow
 
 ```text
-1. GET /keys/{host}/{user}/{keyId}/challenge
-   → { "challenge": "<token>", "namespace": "...", "validUntil": "..." }
-
-2. Sign challenge (same as above)
-
-3. DELETE /keys/{host}/{user}/{keyId}
-   Content-Type: application/json
-   { "challenge": "$CHALLENGE", "signature": "$SIGNATURE" }
-   → 204 No Content (or 404 if not found)
+1. GET /keys/{host}/{user}/{keyId}/challenge (see response shape above)
+2. Sign challenge (see "To produce the signature" under POST above)
+3. DELETE /keys/{host}/{user}/{keyId} with { "challenge", "signature" } (see request/response above)
 ```
 
 ## Input Validation
