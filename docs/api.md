@@ -106,10 +106,7 @@ Health check endpoint.
 1. GET /keys/{host}/{user}/add-challenge
    → { "challenge": "<token>", "namespace": "ssh-key-server-v1", "validUntil": "<iso8601>" }
 
-2. Sign challenge:
-   printf '%s' "$CHALLENGE" > /tmp/c
-   ssh-keygen -Y sign -f ~/.ssh/id_{host} -n "$NAMESPACE" /tmp/c
-   SIGNATURE=$(cat /tmp/c.sig)
+2. Sign challenge (see "To produce the signature" under POST above)
 
 3. POST /keys/{host}/{user}
    Content-Type: application/json
