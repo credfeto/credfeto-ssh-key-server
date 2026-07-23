@@ -102,9 +102,11 @@ Health check endpoint.
 
 ## Full add-key flow
 
+Both flows sign the challenge the same way (see "To produce the signature" under POST above).
+
 ```text
 1. GET /keys/{host}/{user}/add-challenge (see response shape above)
-2. Sign challenge (see "To produce the signature" under POST above)
+2. Sign the challenge.
 3. POST /keys/{host}/{user} with { "key", "challenge", "signature" } (see request/response above)
 ```
 
@@ -112,7 +114,7 @@ Health check endpoint.
 
 ```text
 1. GET /keys/{host}/{user}/{keyId}/challenge (see response shape above)
-2. Sign challenge (see "To produce the signature" under POST above)
+2. Sign the challenge.
 3. DELETE /keys/{host}/{user}/{keyId} with { "challenge", "signature" } (see request/response above)
 ```
 
