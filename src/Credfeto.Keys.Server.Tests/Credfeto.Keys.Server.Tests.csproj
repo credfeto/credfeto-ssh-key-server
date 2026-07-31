@@ -46,6 +46,7 @@
     <ProjectReference Include="..\Credfeto.Keys.Server\Credfeto.Keys.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
     <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />

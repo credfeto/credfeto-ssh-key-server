@@ -27,6 +27,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Challenge and key responses now serialize as camelCase JSON, matching the documented API contract instead of the C# property casing
 - Challenge:HmacSecret and Keys:BasePath are now set via plain settable properties instead of init/required, so the Native AOT configuration binding source generator can actually assign them; previously it silently skipped both, leaving the app running with an empty secret and an empty base path in production regardless of what was configured
 - SSH signature verification incorrectly rejected every legitimately valid public key due to a wire-format comparison bug
+- Ed25519 SSH signature verification is now implemented correctly using BouncyCastle.Cryptography; the previous implementation used System.Security.Cryptography.ECDsa, which has no support for Ed25519/EdDSA, so every genuine signature verification failed (#32)
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - SDK - Updated DotNet SDK to 10.0.302

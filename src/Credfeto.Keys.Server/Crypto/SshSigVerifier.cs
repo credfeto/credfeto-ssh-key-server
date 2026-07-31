@@ -3,6 +3,8 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Crypto.Signers;
 
 namespace Credfeto.Keys.Server.Crypto;
 
@@ -11,11 +13,6 @@ public static class SshSigVerifier
     private const string SshSigBegin = "-----BEGIN SSH SIGNATURE-----";
     private const string SshSigEnd = "-----END SSH SIGNATURE-----";
     private const uint SupportedVersion = 1;
-
-    // Ed25519 SubjectPublicKeyInfo DER prefix (12 bytes):
-    // SEQUENCE { AlgorithmIdentifier { OID 1.3.101.112 } BIT STRING(0 unused bits) }
-    private static ReadOnlySpan<byte> Ed25519SpkiPrefix =>
-        [0x30, 0x2A, 0x30, 0x05, 0x06, 0x03, 0x2B, 0x65, 0x70, 0x03, 0x21, 0x00];
 
     public static SshSigVerificationResult Verify(
         string sshSigPem,
@@ -243,23 +240,21 @@ public static class SshSigVerifier
             return false;
         }
 
-        // Build Ed25519 SubjectPublicKeyInfo DER (44 bytes total)
-        Span<byte> spki = stackalloc byte[44];
-        Ed25519SpkiPrefix.CopyTo(spki);
-        publicKey32.CopyTo(spki[12..]);
+        try
+        {
+            Ed25519PublicKeyParameters publicKey = new(publicKey32.ToArray(), 0);
+            Ed25519Signer verifier = new();
+            verifier.Init(forSigning: false, publicKey);
+            verifier.BlockUpdate(message, 0, message.Length);
 
-        using ECDsa ecdsa = ECDsa.Create();
-        ecdsa.ImportSubjectPublicKeyInfo(spki, out _);
-
-        // For Ed25519, the .NET BCL detects the key type and passes the message directly to
-        // OpenSSL's EVP_DigestVerify with NID_null (no pre-hash). The HashAlgorithmName is
-        // required by the API signature but is ignored for Ed25519.
-        return ecdsa.VerifyData(
-            data: message,
-            signature: signature64,
-            hashAlgorithm: HashAlgorithmName.SHA512,
-            signatureFormat: DSASignatureFormat.IeeeP1363FixedFieldConcatenation
-        );
+            return verifier.VerifySignature(signature64);
+        }
+        catch (ArgumentException)
+        {
+            // BouncyCastle throws for a 32-byte value that does not decode to a valid
+            // Ed25519 curve point; treat that the same as any other invalid signature.
+            return false;
+        }
     }
 
     private static byte[] BuildSigHashBuf(string ns, string hashAlgo, byte[] messageBytes)
@@ -274,14 +269,15 @@ public static class SshSigVerifier
         byte[] nsBytes = Encoding.UTF8.GetBytes(ns);
         byte[] algoBytes = Encoding.UTF8.GetBytes(hashAlgo);
 
-        // "SSHSIG" (6) + uint32(1) (4) + string(ns) (4+len) + string("") (4) + string(algo) (4+len) + string(H(m)) (4+len)
-        int totalLen = 6 + 4 + 4 + nsBytes.Length + 4 + 4 + algoBytes.Length + 4 + h.Length;
+        // Per OpenSSH PROTOCOL.sshsig "Sig computation": the signed blob is
+        // "SSHSIG" (6) + string(ns) (4+len) + string("") (4) + string(algo) (4+len) + string(H(m)) (4+len).
+        // Unlike the outer envelope, this blob does NOT include the uint32 SIG_VERSION field.
+        int totalLen = 6 + 4 + nsBytes.Length + 4 + 4 + algoBytes.Length + 4 + h.Length;
         byte[] buf = new byte[totalLen];
         int offset = 0;
 
         "SSHSIG"u8.CopyTo(buf.AsSpan(start: 0, length: 6));
         offset = 6;
-        WriteUInt32(buf, ref offset, 1);
         WriteString(buf, ref offset, nsBytes);
         WriteUInt32(buf, ref offset, 0); // empty reserved
         WriteString(buf, ref offset, algoBytes);
