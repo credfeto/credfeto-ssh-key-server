@@ -240,12 +240,21 @@ public static class SshSigVerifier
             return false;
         }
 
-        Ed25519PublicKeyParameters publicKey = new(publicKey32.ToArray(), 0);
-        Ed25519Signer verifier = new();
-        verifier.Init(forSigning: false, publicKey);
-        verifier.BlockUpdate(message, 0, message.Length);
+        try
+        {
+            Ed25519PublicKeyParameters publicKey = new(publicKey32.ToArray(), 0);
+            Ed25519Signer verifier = new();
+            verifier.Init(forSigning: false, publicKey);
+            verifier.BlockUpdate(message, 0, message.Length);
 
-        return verifier.VerifySignature(signature64);
+            return verifier.VerifySignature(signature64);
+        }
+        catch (ArgumentException)
+        {
+            // BouncyCastle throws for a 32-byte value that does not decode to a valid
+            // Ed25519 curve point; treat that the same as any other invalid signature.
+            return false;
+        }
     }
 
     private static byte[] BuildSigHashBuf(string ns, string hashAlgo, byte[] messageBytes)
@@ -260,14 +269,15 @@ public static class SshSigVerifier
         byte[] nsBytes = Encoding.UTF8.GetBytes(ns);
         byte[] algoBytes = Encoding.UTF8.GetBytes(hashAlgo);
 
-        // "SSHSIG" (6) + uint32(1) (4) + string(ns) (4+len) + string("") (4) + string(algo) (4+len) + string(H(m)) (4+len)
-        int totalLen = 6 + 4 + 4 + nsBytes.Length + 4 + 4 + algoBytes.Length + 4 + h.Length;
+        // Per OpenSSH PROTOCOL.sshsig "Sig computation": the signed blob is
+        // "SSHSIG" (6) + string(ns) (4+len) + string("") (4) + string(algo) (4+len) + string(H(m)) (4+len).
+        // Unlike the outer envelope, this blob does NOT include the uint32 SIG_VERSION field.
+        int totalLen = 6 + 4 + nsBytes.Length + 4 + 4 + algoBytes.Length + 4 + h.Length;
         byte[] buf = new byte[totalLen];
         int offset = 0;
 
         "SSHSIG"u8.CopyTo(buf.AsSpan(start: 0, length: 6));
         offset = 6;
-        WriteUInt32(buf, ref offset, 1);
         WriteString(buf, ref offset, nsBytes);
         WriteUInt32(buf, ref offset, 0); // empty reserved
         WriteString(buf, ref offset, algoBytes);
