@@ -16,12 +16,15 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Signed challenge-response verification required for adding and deleting SSH keys
 - Restriction to ed25519 and sk-ssh-ed25519 key types only
 - Script (tools/generate-dev-cert.sh) to generate a self-signed TLS certificate for localhost and trust it on Arch Linux and Debian/Ubuntu-based systems
+- Unhandled exceptions are now caught, logged with the request method/path, and returned as a JSON error body instead of an empty response with no diagnostic information
 ### Fixed
 - Corrected broken cross-reference in github-workflows.instructions.md — anchor #visual-indicators updated to #output-helpers to match actual section name in shell-scripts.instructions.md
 - shell.firewall.examples.md open_port_for_private_networks no longer calls firewall-cmd --reload internally; added explicit caller-reload rule to shell.firewall.instructions.md
 - Fix data loss in FileSystemKeyDataStore when the key file is corrupt or unreadable (#16)
 - Reject malformed base64 SSH key data with 400 Bad Request instead of an unhandled 500 error (#17)
 - Avoid eagerly allocating a SemaphoreSlim on every AddKey/RemoveKey call in FileSystemKeyDataStore (#19)
+- Challenge:HmacSecret is now validated at startup (non-empty, valid base64) instead of silently failing every challenge-related request with an empty 500 response
+- Challenge and key responses now serialize as camelCase JSON, matching the documented API contract instead of the C# property casing
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - SDK - Updated DotNet SDK to 10.0.302

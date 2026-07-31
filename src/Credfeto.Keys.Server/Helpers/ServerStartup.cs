@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -85,7 +85,6 @@ internal static class ServerStartup
 
         builder
             .Services.Configure<FileSystemKeyStoreOptions>(keysSection)
-            .Configure<ChallengeOptions>(challengeSection)
             .AddSingleton<TimeProvider>(TimeProvider.System)
             .AddFileSystemKeyStorage()
             .AddSingleton<IChallengeService, ChallengeService>()
@@ -93,20 +92,48 @@ internal static class ServerStartup
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );
 
+        builder
+            .Services.AddOptions<ChallengeOptions>()
+            .Bind(challengeSection)
+            .Validate(
+                validation: static options => IsValidHmacSecret(options.HmacSecret),
+                failureMessage: "Challenge:HmacSecret must be a non-empty, valid base64 value"
+            )
+            .ValidateOnStart();
+
         return builder;
+    }
+
+    private static bool IsValidHmacSecret(string? secret)
+    {
+        if (string.IsNullOrWhiteSpace(secret))
+        {
+            return false;
+        }
+
+        try
+        {
+            _ = Convert.FromBase64String(secret);
+
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
     }
 
     private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder, string configPath)
     {
         builder
             .WebHost.UseKestrel(options: options =>
-                                             SetKestrelOptions(
-                                                 options: options,
-                                                 httpPort: HTTP_PORT,
-                                                 httpsPort: HTTPS_PORT,
-                                                 h2Port: H2_PORT,
-                                                 configurationFiledPath: configPath
-                                             )
+                SetKestrelOptions(
+                    options: options,
+                    httpPort: HTTP_PORT,
+                    httpsPort: HTTPS_PORT,
+                    h2Port: H2_PORT,
+                    configurationFiledPath: configPath
+                )
             )
             .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
             .ConfigureLogging((_, logger) => ConfigureLogging(logger));

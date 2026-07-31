@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +53,7 @@ public static class Program
     {
         Console.WriteLine("App Created");
 
-        WebApplication app = (WebApplication)application.UseForwardedHeaders();
+        WebApplication app = (WebApplication)application.UseUnhandledExceptionLogging().UseForwardedHeaders();
 
         return app.ConfigureEndpoints().RunAsync();
     }
