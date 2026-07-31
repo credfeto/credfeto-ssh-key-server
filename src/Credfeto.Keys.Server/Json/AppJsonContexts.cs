@@ -3,7 +3,7 @@ using Credfeto.Keys.Server.Models;
 
 namespace Credfeto.Keys.Server.Json;
 
-[JsonSourceGenerationOptions]
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(PongDto))]
 [JsonSerializable(typeof(AddKeyResponse))]
 [JsonSerializable(typeof(ChallengeDto))]
