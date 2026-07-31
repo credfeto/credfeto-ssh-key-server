@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,6 +29,11 @@ public sealed class FileSystemKeyDataStore : ISshKeyDataStore
         ILogger<FileSystemKeyDataStore> logger
     )
     {
+        if (string.IsNullOrWhiteSpace(options.Value.BasePath))
+        {
+            throw new InvalidOperationException("Keys:BasePath must be configured");
+        }
+
         this._logger = logger;
         this._timeProvider = timeProvider;
         this._basePath = options.Value.BasePath;
