@@ -67,7 +67,7 @@ internal static class ServerStartup
             .ConfigureSettings(configPath)
             .ConfigureServices()
             .ConfigureAppHost()
-            .ConfigureWebHost()
+            .ConfigureWebHost(configPath)
             .Build();
     }
 
@@ -96,22 +96,17 @@ internal static class ServerStartup
         return builder;
     }
 
-    private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder)
+    private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder, string configPath)
     {
-        IConfigurationSection httpsSection = builder.Configuration.GetSection("Https");
-        string? certPath = httpsSection["CertificatePath"];
-        string? certPassword = httpsSection["CertificatePassword"];
-
         builder
             .WebHost.UseKestrel(options: options =>
-                SetKestrelOptions(
-                    options: options,
-                    httpPort: HTTP_PORT,
-                    httpsPort: HTTPS_PORT,
-                    h2Port: H2_PORT,
-                    certPath: certPath,
-                    certPassword: certPassword
-                )
+                                             SetKestrelOptions(
+                                                 options: options,
+                                                 httpPort: HTTP_PORT,
+                                                 httpsPort: HTTPS_PORT,
+                                                 h2Port: H2_PORT,
+                                                 configurationFiledPath: configPath
+                                             )
             )
             .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
             .ConfigureLogging((_, logger) => ConfigureLogging(logger));
@@ -171,28 +166,26 @@ internal static class ServerStartup
         int httpPort,
         int httpsPort,
         int h2Port,
-        string? certPath,
-        string? certPassword
+        string configurationFiledPath
     )
     {
         options.DisableStringReuse = false;
         options.AllowSynchronousIO = false;
+
         options.AddServerHeader = false;
         options.Limits.MinResponseDataRate = null;
         options.Limits.MinRequestBodyDataRate = null;
 
-        if (httpsPort != 0 && !string.IsNullOrWhiteSpace(certPath) && File.Exists(certPath))
+        string certFile = Path.Combine(path1: configurationFiledPath, path2: "server.pfx");
+
+        if (httpsPort != 0 && File.Exists(certFile))
         {
             Console.WriteLine($"Listening on HTTPS port: {httpsPort}");
             options.Listen(
                 address: IPAddress.Any,
                 port: httpsPort,
-                configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certPath, certPassword: certPassword)
+                configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certFile)
             );
-        }
-        else if (httpsPort != 0)
-        {
-            Console.WriteLine("HTTPS disabled: certificate not configured or not found");
         }
 
         if (h2Port != 0)
@@ -225,12 +218,12 @@ internal static class ServerStartup
         checkId: "CSE007:DisposeObjectsBeforeLosingScope",
         Justification = "Lives for program lifetime"
     )]
-    private static void SetHttpsListenOptions(ListenOptions listenOptions, string certFile, string? certPassword)
+    private static void SetHttpsListenOptions(ListenOptions listenOptions, string certFile)
     {
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
         X509Certificate2 cert = X509CertificateLoader.LoadPkcs12FromFile(
             certFile,
-            password: certPassword,
+            password: null,
             keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet
         );
         listenOptions.UseHttps(cert);
