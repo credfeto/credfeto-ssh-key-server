@@ -127,10 +127,26 @@ public static class SshSigVerifier
 
         byte[] sigKeyBytes = SshWireReader.ReadStringBytes(pkSpan, ref pkPos);
 
-        if (!Base64KeyData.TryDecode(expectedKeyDataBase64, bytes: out byte[]? expectedKeyBytes))
+        // expectedKeyDataBase64 is the second field of an authorized_keys-style line
+        // (e.g. "AAAAC3NzaC1lZDI1NTE5...") which is itself the full SSH wire-format
+        // public key blob (string keytype + string key data) base64-encoded, not just
+        // the raw key point — it must be parsed the same way as the signature's own
+        // embedded public key before comparing, or every key legitimately mismatches.
+        if (!Base64KeyData.TryDecode(expectedKeyDataBase64, bytes: out byte[]? expectedKeyWireBytes))
         {
             return SshSigVerificationResult.InvalidFormat;
         }
+
+        int expectedPos = 0;
+        ReadOnlySpan<byte> expectedSpan = expectedKeyWireBytes;
+        string expectedWireKeyType = SshWireReader.ReadUtf8String(expectedSpan, ref expectedPos);
+
+        if (!string.Equals(a: expectedWireKeyType, b: expectedKeyType, comparisonType: StringComparison.Ordinal))
+        {
+            return SshSigVerificationResult.PublicKeyMismatch;
+        }
+
+        byte[] expectedKeyBytes = SshWireReader.ReadStringBytes(expectedSpan, ref expectedPos);
 
         if (!sigKeyBytes.AsSpan().SequenceEqual(expectedKeyBytes))
         {
