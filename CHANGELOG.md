@@ -30,8 +30,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Ed25519 SSH signature verification is now implemented correctly using BouncyCastle.Cryptography; the previous implementation used System.Security.Cryptography.ECDsa, which has no support for Ed25519/EdDSA, so every genuine signature verification failed (#32)
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
-- SDK - Updated DotNet SDK to 10.0.302
 - Corrected docs/api.md to describe the challenge-response authentication flow
+- SDK - Updated DotNet SDK to 10.0.400
 ### Deprecated
 ### Removed
 ### Deployment Changes
