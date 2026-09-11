@@ -5,6 +5,7 @@ using Credfeto.Keys.DataStore.Interfaces;
 using Credfeto.Keys.Server.Config;
 using Credfeto.Keys.Server.Services;
 using FunFair.Test.Common;
+using FunFair.Test.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NSubstitute;
