@@ -28,14 +28,17 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Challenge:HmacSecret and Keys:BasePath are now set via plain settable properties instead of init/required, so the Native AOT configuration binding source generator can actually assign them; previously it silently skipped both, leaving the app running with an empty secret and an empty base path in production regardless of what was configured
 - SSH signature verification incorrectly rejected every legitimately valid public key due to a wire-format comparison bug
 - Ed25519 SSH signature verification is now implemented correctly using BouncyCastle.Cryptography; the previous implementation used System.Security.Cryptography.ECDsa, which has no support for Ed25519/EdDSA, so every genuine signature verification failed (#32)
+- Updated csproj package references to satisfy FunFair.BuildCheck policy after the .NET SDK 10.0.401 bump - added IncludeAssets to PackageReference entries, normalized ProjectReference paths to forward slashes, and switched test projects from xunit.v3.mtp-v2 to xunit.v3.aot.mtp-v2 4.0.0, bumping xunit.analyzers to 2.0.0, FunFair.Test.Common and FunFair.Test.Source.Generator to 6.4.5.2739, NSubstitute to 6.2.0, and Microsoft.Extensions.TimeProvider.Testing to 10.9.0 to resolve the resulting NuGet downgrade conflicts, and adding a using directive for FunFair.Test.Infrastructure where AddMockedService now lives
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - Corrected docs/api.md to describe the challenge-response authentication flow
-- SDK - Updated DotNet SDK to 10.0.400
+- SDK - Updated DotNet SDK to 10.0.401
 ### Deprecated
 ### Removed
 ### Deployment Changes
+
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+
 ## [0.0.0] - Project created
