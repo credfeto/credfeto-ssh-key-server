@@ -33,6 +33,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - Corrected docs/api.md to describe the challenge-response authentication flow
 - SDK - Updated DotNet SDK to 10.0.401
+- TBD - to be finalized after review
 ### Deprecated
 ### Removed
 ### Deployment Changes
