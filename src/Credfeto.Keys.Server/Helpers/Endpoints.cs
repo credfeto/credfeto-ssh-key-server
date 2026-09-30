@@ -11,7 +11,7 @@ namespace Credfeto.Keys.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    private const string UnhandledExceptionLoggerCategory = "Credfeto.Keys.Server.UnhandledException";
+    private const string UNHANDLED_EXCEPTION_LOGGER_CATEGORY = "Credfeto.Keys.Server.UnhandledException";
 
     public static WebApplication UseUnhandledExceptionLogging(this WebApplication app)
     {
@@ -36,7 +36,7 @@ internal static partial class Endpoints
         {
             ILogger logger = context
                 .RequestServices.GetRequiredService<ILoggerFactory>()
-                .CreateLogger(UnhandledExceptionLoggerCategory);
+                .CreateLogger(UNHANDLED_EXCEPTION_LOGGER_CATEGORY);
 
             logger.UnhandledException(
                 method: context.Request.Method,

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled@sha256:d3c301a47e3279766ccde7fb8e9fc9664973fcd4665c9d60e8df0db2c875795f
 
 WORKDIR /usr/src/app
 

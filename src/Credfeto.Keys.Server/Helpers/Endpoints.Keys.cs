@@ -20,7 +20,7 @@ namespace Credfeto.Keys.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    private const string KeysLoggerCategory = "Credfeto.Keys.Server.Keys";
+    private const string KEYS_LOGGER_CATEGORY = "Credfeto.Keys.Server.Keys";
 
     private static readonly string[] ValidKeyTypes = ["ssh-ed25519", "sk-ssh-ed25519@openssh.com"];
 
@@ -117,7 +117,7 @@ internal static partial class Endpoints
             return Results.BadRequest("Invalid host or username.");
         }
 
-        ILogger logger = loggerFactory.CreateLogger(KeysLoggerCategory);
+        ILogger logger = loggerFactory.CreateLogger(KEYS_LOGGER_CATEGORY);
 
         ChallengeVerificationResult challengeResult = challengeService.VerifyAddChallenge(
             host: host,
@@ -222,7 +222,7 @@ internal static partial class Endpoints
             return Results.BadRequest();
         }
 
-        ILogger logger = loggerFactory.CreateLogger(KeysLoggerCategory);
+        ILogger logger = loggerFactory.CreateLogger(KEYS_LOGGER_CATEGORY);
 
         ChallengeVerificationResult challengeResult = challengeService.VerifyDeleteChallenge(
             host: host,
