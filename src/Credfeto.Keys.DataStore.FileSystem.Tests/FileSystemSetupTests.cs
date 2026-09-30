@@ -2,6 +2,7 @@ using System;
 using Credfeto.Keys.DataStore.FileSystem.Config;
 using Credfeto.Keys.DataStore.Interfaces;
 using FunFair.Test.Common;
+using FunFair.Test.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NSubstitute;

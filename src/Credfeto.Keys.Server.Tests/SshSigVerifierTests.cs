@@ -114,7 +114,11 @@ public sealed class SshSigVerifierTests : TestBase
         Assert.Equal(expected: SshSigVerificationResult.Valid, actual: result);
     }
 
-    private static (byte[] PubKeyBlob, byte[] RawSignature, string ExpectedKeyDataBase64) CreateGenuineEd25519Signature()
+    private static (
+        byte[] PubKeyBlob,
+        byte[] RawSignature,
+        string ExpectedKeyDataBase64
+    ) CreateGenuineEd25519Signature()
     {
         (byte[] publicKey, Ed25519PrivateKeyParameters privateKey) = GenerateEd25519KeyPair();
         byte[] pubKeyBlob = Concat(WireString("ssh-ed25519"), WireBytes(publicKey));
@@ -157,7 +161,13 @@ public sealed class SshSigVerifierTests : TestBase
 
         // Matches production's SshSigVerifier.BuildSigHashBuf: per OpenSSH PROTOCOL.sshsig, the
         // signed blob has no uint32 SIG_VERSION field, unlike the outer envelope below.
-        return Concat("SSHSIG"u8.ToArray(), WireString(Namespace), WireBytes([]), WireString(hashAlgo), WireBytes(hash));
+        return Concat(
+            "SSHSIG"u8.ToArray(),
+            WireString(Namespace),
+            WireBytes([]),
+            WireString(hashAlgo),
+            WireBytes(hash)
+        );
     }
 
     private static string BuildSshSigPem(byte[] pubKeyBlob, string hashAlgo, byte[] innerSigBytes)
