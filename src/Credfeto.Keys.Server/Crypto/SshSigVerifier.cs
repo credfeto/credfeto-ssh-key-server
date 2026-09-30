@@ -10,9 +10,9 @@ namespace Credfeto.Keys.Server.Crypto;
 
 public static class SshSigVerifier
 {
-    private const string SshSigBegin = "-----BEGIN SSH SIGNATURE-----";
-    private const string SshSigEnd = "-----END SSH SIGNATURE-----";
-    private const uint SupportedVersion = 1;
+    private const string SSH_SIG_BEGIN = "-----BEGIN SSH SIGNATURE-----";
+    private const string SSH_SIG_END = "-----END SSH SIGNATURE-----";
+    private const uint SUPPORTED_VERSION = 1;
 
     public static SshSigVerificationResult Verify(
         string sshSigPem,
@@ -69,7 +69,7 @@ public static class SshSigVerifier
 
         uint version = SshWireReader.ReadUInt32(data, ref pos);
 
-        if (version != SupportedVersion)
+        if (version != SUPPORTED_VERSION)
         {
             return SshSigVerificationResult.UnsupportedVersion;
         }
@@ -301,15 +301,15 @@ public static class SshSigVerifier
 
     private static byte[] ParsePem(string pem)
     {
-        int beginIdx = pem.IndexOf(value: SshSigBegin, comparisonType: StringComparison.Ordinal);
-        int endIdx = pem.IndexOf(value: SshSigEnd, comparisonType: StringComparison.Ordinal);
+        int beginIdx = pem.IndexOf(value: SSH_SIG_BEGIN, comparisonType: StringComparison.Ordinal);
+        int endIdx = pem.IndexOf(value: SSH_SIG_END, comparisonType: StringComparison.Ordinal);
 
         if (beginIdx < 0 || endIdx < 0 || endIdx <= beginIdx)
         {
             throw new FormatException("Invalid SSH signature PEM format");
         }
 
-        string b64 = pem[(beginIdx + SshSigBegin.Length)..endIdx];
+        string b64 = pem[(beginIdx + SSH_SIG_BEGIN.Length)..endIdx];
         b64 = b64.Replace(oldValue: "\r\n", newValue: string.Empty, comparisonType: StringComparison.Ordinal)
             .Replace(oldValue: "\n", newValue: string.Empty, comparisonType: StringComparison.Ordinal)
             .Replace(oldValue: "\r", newValue: string.Empty, comparisonType: StringComparison.Ordinal)

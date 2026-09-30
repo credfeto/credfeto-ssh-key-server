@@ -16,9 +16,9 @@ namespace Credfeto.Keys.Server.Tests;
 
 public sealed class SshSigVerifierTests : TestBase
 {
-    private const string Namespace = "ssh-key-server-v1";
-    private const string Challenge = "genuine-challenge";
-    private const string HashAlgo = "sha256";
+    private const string NAMESPACE = "ssh-key-server-v1";
+    private const string CHALLENGE = "genuine-challenge";
+    private const string HASH_ALGO = "sha256";
 
     [Fact]
     public void VerifyReturnsInvalidFormatForMalformedBase64KeyDataInsteadOfThrowing()
@@ -30,7 +30,7 @@ public sealed class SshSigVerifierTests : TestBase
             challenge: "challenge",
             expectedKeyType: "ssh-ed25519",
             expectedKeyDataBase64: "AAAAA",
-            expectedNamespace: Namespace
+            expectedNamespace: NAMESPACE
         );
 
         Assert.Equal(expected: SshSigVerificationResult.InvalidFormat, actual: result);
@@ -41,14 +41,14 @@ public sealed class SshSigVerifierTests : TestBase
     {
         (byte[] pubKeyBlob, byte[] rawSig, string expectedKeyDataBase64) = CreateGenuineEd25519Signature();
         byte[] innerSigBytes = Concat(WireString("ssh-ed25519"), WireBytes(rawSig));
-        string pem = BuildSshSigPem(pubKeyBlob: pubKeyBlob, hashAlgo: HashAlgo, innerSigBytes: innerSigBytes);
+        string pem = BuildSshSigPem(pubKeyBlob: pubKeyBlob, hashAlgo: HASH_ALGO, innerSigBytes: innerSigBytes);
 
         SshSigVerificationResult result = SshSigVerifier.Verify(
             sshSigPem: pem,
-            challenge: Challenge,
+            challenge: CHALLENGE,
             expectedKeyType: "ssh-ed25519",
             expectedKeyDataBase64: expectedKeyDataBase64,
-            expectedNamespace: Namespace
+            expectedNamespace: NAMESPACE
         );
 
         Assert.Equal(expected: SshSigVerificationResult.Valid, actual: result);
@@ -60,14 +60,14 @@ public sealed class SshSigVerifierTests : TestBase
         (byte[] pubKeyBlob, byte[] rawSig, string expectedKeyDataBase64) = CreateGenuineEd25519Signature();
         rawSig[0] ^= 0xFF; // tamper with the signature
         byte[] innerSigBytes = Concat(WireString("ssh-ed25519"), WireBytes(rawSig));
-        string pem = BuildSshSigPem(pubKeyBlob: pubKeyBlob, hashAlgo: HashAlgo, innerSigBytes: innerSigBytes);
+        string pem = BuildSshSigPem(pubKeyBlob: pubKeyBlob, hashAlgo: HASH_ALGO, innerSigBytes: innerSigBytes);
 
         SshSigVerificationResult result = SshSigVerifier.Verify(
             sshSigPem: pem,
-            challenge: Challenge,
+            challenge: CHALLENGE,
             expectedKeyType: "ssh-ed25519",
             expectedKeyDataBase64: expectedKeyDataBase64,
-            expectedNamespace: Namespace
+            expectedNamespace: NAMESPACE
         );
 
         Assert.Equal(expected: SshSigVerificationResult.InvalidSignature, actual: result);
@@ -87,7 +87,7 @@ public sealed class SshSigVerifierTests : TestBase
             WireString(application)
         );
 
-        byte[] sighashbuf = BuildSigHashBuf(hashAlgo: HashAlgo, challenge: Challenge);
+        byte[] sighashbuf = BuildSigHashBuf(hashAlgo: HASH_ALGO, challenge: CHALLENGE);
         byte[] appHash = SHA256.HashData(Encoding.UTF8.GetBytes(application));
         byte[] clientDataHash = SHA256.HashData(sighashbuf);
         byte[] authData = Concat(appHash, [flags], WireUInt32(counter), clientDataHash);
@@ -100,15 +100,15 @@ public sealed class SshSigVerifierTests : TestBase
             WireUInt32(counter)
         );
 
-        string pem = BuildSshSigPem(pubKeyBlob: pubKeyBlob, hashAlgo: HashAlgo, innerSigBytes: innerSigBytes);
+        string pem = BuildSshSigPem(pubKeyBlob: pubKeyBlob, hashAlgo: HASH_ALGO, innerSigBytes: innerSigBytes);
         string expectedKeyDataBase64 = Convert.ToBase64String(pubKeyBlob);
 
         SshSigVerificationResult result = SshSigVerifier.Verify(
             sshSigPem: pem,
-            challenge: Challenge,
+            challenge: CHALLENGE,
             expectedKeyType: "sk-ssh-ed25519@openssh.com",
             expectedKeyDataBase64: expectedKeyDataBase64,
-            expectedNamespace: Namespace
+            expectedNamespace: NAMESPACE
         );
 
         Assert.Equal(expected: SshSigVerificationResult.Valid, actual: result);
@@ -122,7 +122,7 @@ public sealed class SshSigVerifierTests : TestBase
     {
         (byte[] publicKey, Ed25519PrivateKeyParameters privateKey) = GenerateEd25519KeyPair();
         byte[] pubKeyBlob = Concat(WireString("ssh-ed25519"), WireBytes(publicKey));
-        byte[] sighashbuf = BuildSigHashBuf(hashAlgo: HashAlgo, challenge: Challenge);
+        byte[] sighashbuf = BuildSigHashBuf(hashAlgo: HASH_ALGO, challenge: CHALLENGE);
         byte[] rawSig = SignEd25519(privateKey: privateKey, message: sighashbuf);
 
         return (pubKeyBlob, rawSig, Convert.ToBase64String(pubKeyBlob));
@@ -163,7 +163,7 @@ public sealed class SshSigVerifierTests : TestBase
         // signed blob has no uint32 SIG_VERSION field, unlike the outer envelope below.
         return Concat(
             "SSHSIG"u8.ToArray(),
-            WireString(Namespace),
+            WireString(NAMESPACE),
             WireBytes([]),
             WireString(hashAlgo),
             WireBytes(hash)
@@ -176,7 +176,7 @@ public sealed class SshSigVerifierTests : TestBase
             "SSHSIG"u8.ToArray(),
             WireUInt32(1),
             WireBytes(pubKeyBlob),
-            WireString(Namespace),
+            WireString(NAMESPACE),
             WireBytes([]),
             WireString(hashAlgo),
             WireBytes(innerSigBytes)
