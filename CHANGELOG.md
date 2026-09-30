@@ -33,7 +33,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - Corrected docs/api.md to describe the challenge-response authentication flow
 - SDK - Updated DotNet SDK to 10.0.401
-- TBD - to be finalized after review
+- Migrated to .NET 11 (SDK 11.0.100-rc.1, net11.0 target frameworks) with the Docker base image moved to runtime-deps:11.0-resolute-chiseled pinned by digest, dropped package references now provided by the shared framework, and fixed analyzer findings (private constant naming, ordinal LastIndexOf)
 ### Deprecated
 ### Removed
 ### Deployment Changes
