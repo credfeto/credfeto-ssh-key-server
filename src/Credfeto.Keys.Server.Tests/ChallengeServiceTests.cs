@@ -112,11 +112,29 @@ public sealed class ChallengeServiceTests : LoggingTestBase
     {
         IChallengeService service = this.CreateService();
         string token = service.GenerateAddChallenge(host: HOST, user: USER);
-        string tampered = token[..^4] + "XXXX";
+        int signatureStart = token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal) + 1;
+
+        // Replacing the first signature character keeps the encoding canonical; the final character carries
+        // padding bits that .NET 11+ requires to be zero, so altering it produces a format error instead.
+        char replacement = token[signatureStart] == 'A' ? 'B' : 'A';
+        string tampered = token[..signatureStart] + replacement + token[(signatureStart + 1)..];
 
         ChallengeVerificationResult result = service.VerifyAddChallenge(host: HOST, user: USER, token: tampered);
 
         Assert.Equal(expected: ChallengeVerificationResult.InvalidSignature, actual: result);
+    }
+
+    [Fact]
+    public void AddChallengeFailsForMalformedSignature()
+    {
+        IChallengeService service = this.CreateService();
+        string token = service.GenerateAddChallenge(host: HOST, user: USER);
+        int signatureStart = token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal) + 1;
+        string malformed = token[..signatureStart] + "!!!!";
+
+        ChallengeVerificationResult result = service.VerifyAddChallenge(host: HOST, user: USER, token: malformed);
+
+        Assert.Equal(expected: ChallengeVerificationResult.InvalidFormat, actual: result);
     }
 
     [Fact]

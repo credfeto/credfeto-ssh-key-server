@@ -148,7 +148,7 @@ public sealed class ChallengeService : IChallengeService
 
     private (ChallengeVerificationResult Result, string[]? Parts) VerifyToken(string token)
     {
-        int dotIdx = token.LastIndexOf('.');
+        int dotIdx = token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal);
 
         if (dotIdx < 0)
         {
