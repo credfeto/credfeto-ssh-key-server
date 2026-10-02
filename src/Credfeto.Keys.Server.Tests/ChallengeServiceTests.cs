@@ -147,21 +147,36 @@ public sealed class ChallengeServiceTests : LoggingTestBase
     }
 
     [Theory]
-    [InlineData(-1, "=")]
-    [InlineData(-1, "==")]
     [InlineData(10, "=")]
     [InlineData(10, " ")]
     [InlineData(10, "\n")]
     [InlineData(0, "\t")]
-    [InlineData(-1, " ")]
     public void AddChallengeFailsForSignatureWithNonAlphabetCharacters(int offset, string inserted)
     {
         IChallengeService service = this.CreateService();
         string token = service.GenerateAddChallenge(host: HOST, user: USER);
-        int insertAt = offset < 0 ? token.Length : GetSignatureStart(token) + offset;
+        int insertAt = GetSignatureStart(token) + offset;
         string malformed = token.Insert(startIndex: insertAt, value: inserted);
 
         ChallengeVerificationResult result = service.VerifyAddChallenge(host: HOST, user: USER, token: malformed);
+
+        Assert.Equal(expected: ChallengeVerificationResult.InvalidFormat, actual: result);
+    }
+
+    [Theory]
+    [InlineData("=")]
+    [InlineData("==")]
+    [InlineData(" ")]
+    public void AddChallengeFailsForSignatureWithTrailingNonAlphabetCharacters(string appended)
+    {
+        IChallengeService service = this.CreateService();
+        string token = service.GenerateAddChallenge(host: HOST, user: USER);
+
+        ChallengeVerificationResult result = service.VerifyAddChallenge(
+            host: HOST,
+            user: USER,
+            token: token + appended
+        );
 
         Assert.Equal(expected: ChallengeVerificationResult.InvalidFormat, actual: result);
     }
