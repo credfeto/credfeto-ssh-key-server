@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Config/">
     <File Path="../CHANGELOG.md" />
+    <File Path="../Dockerfile" />
     <File Path="../README.md" />
     <File Path="global.json" />
   </Folder>
