@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-azurelinux3.0-distroless@sha256:52ae46799f8653ed855ae786ecf3d44e2a914708c755352c829ed1426ed9303a
 
 WORKDIR /usr/src/app
 

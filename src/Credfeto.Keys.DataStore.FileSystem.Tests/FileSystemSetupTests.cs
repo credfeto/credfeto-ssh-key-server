@@ -19,7 +19,7 @@ public sealed class FileSystemSetupTests : DependencyInjectionTestsBase
     {
         return services
             .AddFileSystemKeyStorage()
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton(TimeProvider.System)
             .AddMockedService<IOptions<FileSystemKeyStoreOptions>>(static o =>
                 o.Value.Returns(new FileSystemKeyStoreOptions { BasePath = "/tmp/test-keys" })
             );

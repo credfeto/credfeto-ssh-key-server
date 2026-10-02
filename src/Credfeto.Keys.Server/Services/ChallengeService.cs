@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,6 +13,12 @@ namespace Credfeto.Keys.Server.Services;
 
 public sealed class ChallengeService : IChallengeService
 {
+    // Only the unpadded base64url alphabet the encoder emits is accepted, so padding, whitespace and the
+    // standard base64 '+' and '/' characters (all of which a decoder may tolerate) fail closed as malformed.
+    private static readonly SearchValues<char> Base64UrlAlphabet = SearchValues.Create(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    );
+
     private readonly byte[] _secretKey;
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _ttl;
@@ -148,31 +156,22 @@ public sealed class ChallengeService : IChallengeService
 
     private (ChallengeVerificationResult Result, string[]? Parts) VerifyToken(string token)
     {
-        int dotIdx = token.LastIndexOf('.');
+        int dotIdx = token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal);
 
         if (dotIdx < 0)
         {
             return (ChallengeVerificationResult.InvalidFormat, null);
         }
 
-        string payload = token[..dotIdx];
-        string hmacBase64Url = token[(dotIdx + 1)..];
+        Span<byte> actualHmac = stackalloc byte[HMACSHA256.HashSizeInBytes];
 
-        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
-
-        using HMACSHA256 hmac = new(key: this._secretKey);
-        byte[] expectedHmac = hmac.ComputeHash(payloadBytes);
-
-        byte[] actualHmac;
-
-        try
-        {
-            actualHmac = Base64UrlDecode(hmacBase64Url);
-        }
-        catch (FormatException)
+        if (!TryDecodeHmac(hmacBase64Url: token.AsSpan(dotIdx + 1), destination: actualHmac))
         {
             return (ChallengeVerificationResult.InvalidFormat, null);
         }
+
+        string payload = token[..dotIdx];
+        byte[] expectedHmac = this.ComputeHmac(payload);
 
         if (!CryptographicOperations.FixedTimeEquals(expectedHmac, actualHmac))
         {
@@ -211,36 +210,36 @@ public sealed class ChallengeService : IChallengeService
 
     private string CreateToken(string payload)
     {
-        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
+        return $"{payload}.{Base64Url.EncodeToString(this.ComputeHmac(payload))}";
+    }
 
-        using HMACSHA256 hmac = new(key: this._secretKey);
-        byte[] hash = hmac.ComputeHash(payloadBytes);
-
-        return $"{payload}.{Base64UrlEncode(hash)}";
+    private byte[] ComputeHmac(string payload)
+    {
+        return HMACSHA256.HashData(key: this._secretKey, source: Encoding.UTF8.GetBytes(payload));
     }
 
     private static string GenerateNonce()
     {
         byte[] bytes = RandomNumberGenerator.GetBytes(16);
 
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Convert.ToHexStringLower(bytes);
     }
 
-    private static string Base64UrlEncode(byte[] data)
+    private static bool TryDecodeHmac(ReadOnlySpan<char> hmacBase64Url, Span<byte> destination)
     {
-        return Convert
-            .ToBase64String(data)
-            .TrimEnd('=')
-            .Replace(oldChar: '+', newChar: '-')
-            .Replace(oldChar: '/', newChar: '_');
-    }
+        if (hmacBase64Url.ContainsAnyExcept(Base64UrlAlphabet))
+        {
+            return false;
+        }
 
-    private static byte[] Base64UrlDecode(string value)
-    {
-        string s = value.Replace(oldChar: '-', newChar: '+').Replace(oldChar: '_', newChar: '/');
-        int padding = (4 - s.Length % 4) % 4;
-        s = s.PadRight(s.Length + padding, '=');
+        OperationStatus status = Base64Url.DecodeFromChars(
+            source: hmacBase64Url,
+            destination: destination,
+            charsConsumed: out _,
+            bytesWritten: out int bytesWritten,
+            isFinalBlock: true
+        );
 
-        return Convert.FromBase64String(s);
+        return status == OperationStatus.Done && bytesWritten == destination.Length;
     }
 }
