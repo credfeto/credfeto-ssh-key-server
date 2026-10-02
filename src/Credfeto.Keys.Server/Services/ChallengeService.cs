@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,6 +13,12 @@ namespace Credfeto.Keys.Server.Services;
 
 public sealed class ChallengeService : IChallengeService
 {
+    // Only the unpadded base64url alphabet the encoder emits is accepted, so padding, whitespace and the
+    // standard base64 '+' and '/' characters (all of which a decoder may tolerate) fail closed as malformed.
+    private static readonly SearchValues<char> Base64UrlAlphabet = SearchValues.Create(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    );
+
     private readonly byte[] _secretKey;
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _ttl;
@@ -163,13 +171,9 @@ public sealed class ChallengeService : IChallengeService
         using HMACSHA256 hmac = new(key: this._secretKey);
         byte[] expectedHmac = hmac.ComputeHash(payloadBytes);
 
-        byte[] actualHmac;
+        Span<byte> actualHmac = stackalloc byte[HMACSHA256.HashSizeInBytes];
 
-        try
-        {
-            actualHmac = Base64UrlDecode(hmacBase64Url);
-        }
-        catch (FormatException)
+        if (!TryDecodeHmac(hmacBase64Url: hmacBase64Url, destination: actualHmac))
         {
             return (ChallengeVerificationResult.InvalidFormat, null);
         }
@@ -216,7 +220,7 @@ public sealed class ChallengeService : IChallengeService
         using HMACSHA256 hmac = new(key: this._secretKey);
         byte[] hash = hmac.ComputeHash(payloadBytes);
 
-        return $"{payload}.{Base64UrlEncode(hash)}";
+        return $"{payload}.{Base64Url.EncodeToString(hash)}";
     }
 
     private static string GenerateNonce()
@@ -226,21 +230,23 @@ public sealed class ChallengeService : IChallengeService
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
-    private static string Base64UrlEncode(byte[] data)
+    private static bool TryDecodeHmac(string hmacBase64Url, Span<byte> destination)
     {
-        return Convert
-            .ToBase64String(data)
-            .TrimEnd('=')
-            .Replace(oldChar: '+', newChar: '-')
-            .Replace(oldChar: '/', newChar: '_');
-    }
+        ReadOnlySpan<char> source = hmacBase64Url.AsSpan();
 
-    private static byte[] Base64UrlDecode(string value)
-    {
-        string s = value.Replace(oldChar: '-', newChar: '+').Replace(oldChar: '_', newChar: '/');
-        int padding = (4 - s.Length % 4) % 4;
-        s = s.PadRight(s.Length + padding, '=');
+        if (source.ContainsAnyExcept(Base64UrlAlphabet))
+        {
+            return false;
+        }
 
-        return Convert.FromBase64String(s);
+        OperationStatus status = Base64Url.DecodeFromChars(
+            source: source,
+            destination: destination,
+            charsConsumed: out _,
+            bytesWritten: out int bytesWritten,
+            isFinalBlock: true
+        );
+
+        return status == OperationStatus.Done && bytesWritten == destination.Length;
     }
 }
