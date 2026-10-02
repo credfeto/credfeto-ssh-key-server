@@ -163,20 +163,15 @@ public sealed class ChallengeService : IChallengeService
             return (ChallengeVerificationResult.InvalidFormat, null);
         }
 
-        string payload = token[..dotIdx];
-        string hmacBase64Url = token[(dotIdx + 1)..];
-
-        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
-
-        using HMACSHA256 hmac = new(key: this._secretKey);
-        byte[] expectedHmac = hmac.ComputeHash(payloadBytes);
-
         Span<byte> actualHmac = stackalloc byte[HMACSHA256.HashSizeInBytes];
 
-        if (!TryDecodeHmac(hmacBase64Url: hmacBase64Url, destination: actualHmac))
+        if (!TryDecodeHmac(hmacBase64Url: token.AsSpan(dotIdx + 1), destination: actualHmac))
         {
             return (ChallengeVerificationResult.InvalidFormat, null);
         }
+
+        string payload = token[..dotIdx];
+        byte[] expectedHmac = this.ComputeHmac(payload);
 
         if (!CryptographicOperations.FixedTimeEquals(expectedHmac, actualHmac))
         {
@@ -215,32 +210,30 @@ public sealed class ChallengeService : IChallengeService
 
     private string CreateToken(string payload)
     {
-        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
+        return $"{payload}.{Base64Url.EncodeToString(this.ComputeHmac(payload))}";
+    }
 
-        using HMACSHA256 hmac = new(key: this._secretKey);
-        byte[] hash = hmac.ComputeHash(payloadBytes);
-
-        return $"{payload}.{Base64Url.EncodeToString(hash)}";
+    private byte[] ComputeHmac(string payload)
+    {
+        return HMACSHA256.HashData(key: this._secretKey, source: Encoding.UTF8.GetBytes(payload));
     }
 
     private static string GenerateNonce()
     {
         byte[] bytes = RandomNumberGenerator.GetBytes(16);
 
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Convert.ToHexStringLower(bytes);
     }
 
-    private static bool TryDecodeHmac(string hmacBase64Url, Span<byte> destination)
+    private static bool TryDecodeHmac(ReadOnlySpan<char> hmacBase64Url, Span<byte> destination)
     {
-        ReadOnlySpan<char> source = hmacBase64Url.AsSpan();
-
-        if (source.ContainsAnyExcept(Base64UrlAlphabet))
+        if (hmacBase64Url.ContainsAnyExcept(Base64UrlAlphabet))
         {
             return false;
         }
 
         OperationStatus status = Base64Url.DecodeFromChars(
-            source: source,
+            source: hmacBase64Url,
             destination: destination,
             charsConsumed: out _,
             bytesWritten: out int bytesWritten,
