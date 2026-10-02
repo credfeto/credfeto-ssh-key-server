@@ -243,9 +243,14 @@ public sealed class ChallengeServiceTests : LoggingTestBase
         int signatureStart = GetSignatureStart(token);
         string payload = token[..(signatureStart - 1)];
 
-        string expected = ToLegacyBase64Url(HMACSHA256.HashData(key: Secret, source: Encoding.UTF8.GetBytes(payload)));
+        string expected = ToLegacyBase64Url(ComputeHmac(payload));
 
         Assert.Equal(expected: expected, actual: token[signatureStart..]);
+    }
+
+    private static byte[] ComputeHmac(string payload)
+    {
+        return HMACSHA256.HashData(key: Secret, source: Encoding.UTF8.GetBytes(payload));
     }
 
     private static string ToLegacyBase64Url(byte[] data)
@@ -264,9 +269,7 @@ public sealed class ChallengeServiceTests : LoggingTestBase
         for (int nonce = 0; nonce < MAX_NONCE_SEARCH; nonce++)
         {
             string payload = $"add:{HOST}:{USER}:{unixMs}:{nonce:x32}";
-            string signature = Convert
-                .ToBase64String(HMACSHA256.HashData(key: Secret, source: Encoding.UTF8.GetBytes(payload)))
-                .TrimEnd('=');
+            string signature = Convert.ToBase64String(ComputeHmac(payload)).TrimEnd('=');
 
             if (signature.AsSpan().IndexOfAny('+', '/') >= 0)
             {
