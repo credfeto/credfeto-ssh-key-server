@@ -19,6 +19,11 @@ public sealed class ChallengeServiceTests : LoggingTestBase
     public ChallengeServiceTests(ITestOutputHelper output)
         : base(output) { }
 
+    private static int GetSignatureStart(string token)
+    {
+        return token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal) + 1;
+    }
+
     private IChallengeService CreateService(FakeTimeProvider? timeProvider = null)
     {
         IOptions<ChallengeOptions> options = Substitute.For<IOptions<ChallengeOptions>>();
@@ -112,7 +117,7 @@ public sealed class ChallengeServiceTests : LoggingTestBase
     {
         IChallengeService service = this.CreateService();
         string token = service.GenerateAddChallenge(host: HOST, user: USER);
-        int signatureStart = token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal) + 1;
+        int signatureStart = GetSignatureStart(token);
 
         // Replacing the first signature character keeps the encoding canonical; the final character carries
         // padding bits that .NET 11+ requires to be zero, so altering it produces a format error instead.
@@ -129,7 +134,7 @@ public sealed class ChallengeServiceTests : LoggingTestBase
     {
         IChallengeService service = this.CreateService();
         string token = service.GenerateAddChallenge(host: HOST, user: USER);
-        int signatureStart = token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal) + 1;
+        int signatureStart = GetSignatureStart(token);
         string malformed = token[..signatureStart] + "!!!!";
 
         ChallengeVerificationResult result = service.VerifyAddChallenge(host: HOST, user: USER, token: malformed);
