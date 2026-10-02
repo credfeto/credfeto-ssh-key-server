@@ -3,10 +3,12 @@ using Credfeto.Keys.DataStore.FileSystem;
 using Credfeto.Keys.DataStore.FileSystem.Config;
 using Credfeto.Keys.DataStore.Interfaces;
 using Credfeto.Keys.Server.Config;
+using Credfeto.Keys.Server.Helpers;
 using Credfeto.Keys.Server.Services;
 using FunFair.Test.Common;
 using FunFair.Test.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
@@ -15,6 +17,8 @@ namespace Credfeto.Keys.Server.Tests;
 
 public sealed class ServerSetupTests : DependencyInjectionTestsBase
 {
+    private const string KEYS_LOGGER_CATEGORY = "Credfeto.Keys.Server.Keys";
+
     public ServerSetupTests(ITestOutputHelper output)
         : base(output: output, dependencyInjectionRegistration: Configure) { }
 
@@ -22,8 +26,9 @@ public sealed class ServerSetupTests : DependencyInjectionTestsBase
     {
         return services
             .AddFileSystemKeyStorage()
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton(TimeProvider.System)
             .AddSingleton<IChallengeService, ChallengeService>()
+            .AddKeysEndpointLogging()
             .AddMockedService<IOptions<FileSystemKeyStoreOptions>>(static o =>
                 o.Value.Returns(new FileSystemKeyStoreOptions { BasePath = "/tmp/test-keys" })
             )
@@ -49,5 +54,14 @@ public sealed class ServerSetupTests : DependencyInjectionTestsBase
     public void IChallengeServiceShouldBeRegistered()
     {
         this.RequireService<IChallengeService>();
+    }
+
+    [Fact]
+    public void KeysEndpointLoggerShouldBeRegisteredAsKeyedSingleton()
+    {
+        ILogger first = this.ServiceProvider.GetRequiredKeyedService<ILogger>(KEYS_LOGGER_CATEGORY);
+        ILogger second = this.ServiceProvider.GetRequiredKeyedService<ILogger>(KEYS_LOGGER_CATEGORY);
+
+        Assert.Same(expected: first, actual: second);
     }
 }

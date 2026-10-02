@@ -9,13 +9,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Keys.Server.Helpers;
 
-internal static partial class Endpoints
+public static partial class Endpoints
 {
     private const string UNHANDLED_EXCEPTION_LOGGER_CATEGORY = "Credfeto.Keys.Server.UnhandledException";
 
     public static WebApplication UseUnhandledExceptionLogging(this WebApplication app)
     {
-        app.UseExceptionHandler(configure: errorApp => errorApp.Run(HandleUnhandledExceptionAsync));
+        ILogger logger = app
+            .Services.GetRequiredService<ILoggerFactory>()
+            .CreateLogger(UNHANDLED_EXCEPTION_LOGGER_CATEGORY);
+
+        app.UseExceptionHandler(configure: errorApp =>
+            errorApp.Run(context => HandleUnhandledExceptionAsync(context: context, logger: logger))
+        );
 
         return app;
     }
@@ -28,16 +34,12 @@ internal static partial class Endpoints
         return app.ConfigureKeysEndpoints();
     }
 
-    private static Task HandleUnhandledExceptionAsync(HttpContext context)
+    private static Task HandleUnhandledExceptionAsync(HttpContext context, ILogger logger)
     {
         IExceptionHandlerFeature? feature = context.Features.Get<IExceptionHandlerFeature>();
 
         if (feature?.Error is { } exception)
         {
-            ILogger logger = context
-                .RequestServices.GetRequiredService<ILoggerFactory>()
-                .CreateLogger(UNHANDLED_EXCEPTION_LOGGER_CATEGORY);
-
             logger.UnhandledException(
                 method: context.Request.Method,
                 path: context.Request.Path.Value ?? string.Empty,

@@ -85,9 +85,10 @@ internal static class ServerStartup
 
         builder
             .Services.Configure<FileSystemKeyStoreOptions>(keysSection)
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton(TimeProvider.System)
             .AddFileSystemKeyStorage()
             .AddSingleton<IChallengeService, ChallengeService>()
+            .AddKeysEndpointLogging()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );

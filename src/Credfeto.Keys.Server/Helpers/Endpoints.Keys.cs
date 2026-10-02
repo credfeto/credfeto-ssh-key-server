@@ -14,15 +14,26 @@ using Credfeto.Keys.Server.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Keys.Server.Helpers;
 
-internal static partial class Endpoints
+public static partial class Endpoints
 {
     private const string KEYS_LOGGER_CATEGORY = "Credfeto.Keys.Server.Keys";
 
     private static readonly string[] ValidKeyTypes = ["ssh-ed25519", "sk-ssh-ed25519@openssh.com"];
+
+    public static IServiceCollection AddKeysEndpointLogging(this IServiceCollection services)
+    {
+        // Registered as a keyed singleton so the handlers share one logger, created once, under the same category.
+        return services.AddKeyedSingleton<ILogger>(
+            serviceKey: KEYS_LOGGER_CATEGORY,
+            implementationFactory: static (serviceProvider, _) =>
+                serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(KEYS_LOGGER_CATEGORY)
+        );
+    }
 
     private static WebApplication ConfigureKeysEndpoints(this WebApplication app)
     {
@@ -108,7 +119,7 @@ internal static partial class Endpoints
         [FromBody] AddKeyRequest request,
         ISshKeyDataStore store,
         IChallengeService challengeService,
-        ILoggerFactory loggerFactory,
+        [FromKeyedServices(KEYS_LOGGER_CATEGORY)] ILogger logger,
         CancellationToken cancellationToken
     )
     {
@@ -116,8 +127,6 @@ internal static partial class Endpoints
         {
             return Results.BadRequest("Invalid host or username.");
         }
-
-        ILogger logger = loggerFactory.CreateLogger(KEYS_LOGGER_CATEGORY);
 
         ChallengeVerificationResult challengeResult = challengeService.VerifyAddChallenge(
             host: host,
@@ -135,9 +144,9 @@ internal static partial class Endpoints
         if (
             !TryParseKeyLine(
                 keyLine: request.Key.Trim(),
-                keyType: out string? keyType,
-                keyData: out string? keyData,
-                comment: out string? comment
+                keyType: out string keyType,
+                keyData: out string keyData,
+                comment: out string comment
             )
         )
         {
@@ -213,7 +222,7 @@ internal static partial class Endpoints
         [FromBody] DeleteKeyRequest request,
         ISshKeyDataStore store,
         IChallengeService challengeService,
-        ILoggerFactory loggerFactory,
+        [FromKeyedServices(KEYS_LOGGER_CATEGORY)] ILogger logger,
         CancellationToken cancellationToken
     )
     {
@@ -221,8 +230,6 @@ internal static partial class Endpoints
         {
             return Results.BadRequest();
         }
-
-        ILogger logger = loggerFactory.CreateLogger(KEYS_LOGGER_CATEGORY);
 
         ChallengeVerificationResult challengeResult = challengeService.VerifyDeleteChallenge(
             host: host,
@@ -393,7 +400,7 @@ internal static partial class Endpoints
     private static partial Regex UsernameRegex();
 
     [GeneratedRegex(
-        pattern: @"^[A-Za-z0-9+/]+=*$",
+        pattern: "^[A-Za-z0-9+/]+=*$",
         options: RegexOptions.CultureInvariant | RegexOptions.NonBacktracking
     )]
     private static partial Regex Base64Regex();
