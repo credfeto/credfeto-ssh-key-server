@@ -11,6 +11,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 - Removed private key (server.pfx) from repository — cert path and passphrase are now configurable via Https:CertificatePath and Https:CertificatePassword in appsettings.json; a dev-cert generation script is provided for local setup
+- Challenge token signatures are now only accepted in canonical unpadded base64url form; padded, standard-alphabet (+ /) and wrong-length signatures, previously accepted or reported as an invalid signature, are now rejected as invalid format
 ### Added
 - SSH key server with file system storage for per-host/user authorized public key management
 - Signed challenge-response verification required for adding and deleting SSH keys
@@ -34,6 +35,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Corrected docs/api.md to describe the challenge-response authentication flow
 - SDK - Updated DotNet SDK to 10.0.401
 - Migrated to .NET 11 (SDK 11.0.100-rc.1, net11.0 target frameworks) with the Docker base image moved to runtime-deps:11.0-azurelinux3.0-distroless pinned by digest, InvariantGlobalization enabled, dropped package references now provided by the shared framework, and fixed analyzer findings (private constant naming, ordinal LastIndexOf)
+- Endpoint loggers are now created once at startup and injected as keyed singletons instead of being looked up from the logger factory on every request
 ### Deprecated
 ### Removed
 ### Deployment Changes
