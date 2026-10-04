@@ -1,11 +1,9 @@
-﻿using System;
-using Credfeto.Keys.Server.Crypto;
-using Credfeto.Keys.Server.Services;
+﻿using Credfeto.Keys.Crypto;
 using Microsoft.Extensions.Logging;
 
-namespace Credfeto.Keys.Server.Helpers.LoggingExtensions;
+namespace Credfeto.Keys.Services.LoggingExtensions;
 
-internal static partial class KeysEndpointsLoggingExtensions
+internal static partial class KeyManagementServiceLoggingExtensions
 {
     [LoggerMessage(
         EventId = 1,

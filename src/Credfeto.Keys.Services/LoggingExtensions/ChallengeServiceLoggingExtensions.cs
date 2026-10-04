@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Credfeto.Keys.Server.Services.LoggingExtensions;
+namespace Credfeto.Keys.Services.LoggingExtensions;
 
 internal static partial class ChallengeServiceLoggingExtensions
 {

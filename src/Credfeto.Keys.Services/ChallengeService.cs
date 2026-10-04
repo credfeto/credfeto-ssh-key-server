@@ -4,12 +4,12 @@ using System.Buffers.Text;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using Credfeto.Keys.Server.Config;
-using Credfeto.Keys.Server.Services.LoggingExtensions;
+using Credfeto.Keys.Services.Config;
+using Credfeto.Keys.Services.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Credfeto.Keys.Server.Services;
+namespace Credfeto.Keys.Services;
 
 public sealed class ChallengeService : IChallengeService
 {
@@ -225,7 +225,7 @@ public sealed class ChallengeService : IChallengeService
         return Convert.ToHexStringLower(bytes);
     }
 
-    private static bool TryDecodeHmac(ReadOnlySpan<char> hmacBase64Url, Span<byte> destination)
+    private static bool TryDecodeHmac(in ReadOnlySpan<char> hmacBase64Url, in Span<byte> destination)
     {
         if (hmacBase64Url.ContainsAnyExcept(Base64UrlAlphabet))
         {
