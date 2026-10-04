@@ -3,7 +3,6 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using Credfeto.Keys.Server.Crypto;
 using FunFair.Test.Common;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
@@ -12,7 +11,7 @@ using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Security;
 using Xunit;
 
-namespace Credfeto.Keys.Server.Tests;
+namespace Credfeto.Keys.Crypto.Tests;
 
 public sealed class SshSigVerifierTests : TestBase
 {

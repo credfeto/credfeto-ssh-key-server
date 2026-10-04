@@ -1,8 +1,7 @@
-using Credfeto.Keys.Server.Crypto;
 using FunFair.Test.Common;
 using Xunit;
 
-namespace Credfeto.Keys.Server.Tests;
+namespace Credfeto.Keys.Crypto.Tests;
 
 public sealed class Base64KeyDataTests : TestBase
 {

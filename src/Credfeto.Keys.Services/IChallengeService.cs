@@ -1,6 +1,6 @@
 using System;
 
-namespace Credfeto.Keys.Server.Services;
+namespace Credfeto.Keys.Services;
 
 public interface IChallengeService
 {
