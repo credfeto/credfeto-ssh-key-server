@@ -7,9 +7,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Credfeto.Keys.DataStore.FileSystem;
 using Credfeto.Keys.DataStore.FileSystem.Config;
-using Credfeto.Keys.Server.Config;
 using Credfeto.Keys.Server.Json;
-using Credfeto.Keys.Server.Services;
+using Credfeto.Keys.Services;
+using Credfeto.Keys.Services.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -87,8 +87,7 @@ internal static class ServerStartup
             .Services.Configure<FileSystemKeyStoreOptions>(keysSection)
             .AddSingleton(TimeProvider.System)
             .AddFileSystemKeyStorage()
-            .AddSingleton<IChallengeService, ChallengeService>()
-            .AddKeysEndpointLogging()
+            .AddKeyServices()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );

@@ -3,11 +3,11 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Text;
 
-namespace Credfeto.Keys.Server.Crypto;
+namespace Credfeto.Keys.Crypto;
 
 internal static class SshWireReader
 {
-    public static uint ReadUInt32(ReadOnlySpan<byte> data, ref int position)
+    public static uint ReadUInt32(in ReadOnlySpan<byte> data, ref int position)
     {
         if (position + 4 > data.Length)
         {
@@ -20,7 +20,7 @@ internal static class SshWireReader
         return value;
     }
 
-    public static byte ReadByte(ReadOnlySpan<byte> data, ref int position)
+    public static byte ReadByte(in ReadOnlySpan<byte> data, ref int position)
     {
         if (position >= data.Length)
         {
@@ -30,7 +30,7 @@ internal static class SshWireReader
         return data[position++];
     }
 
-    public static byte[] ReadStringBytes(ReadOnlySpan<byte> data, ref int position)
+    public static byte[] ReadStringBytes(in ReadOnlySpan<byte> data, ref int position)
     {
         uint len = ReadUInt32(data, ref position);
 
@@ -52,7 +52,7 @@ internal static class SshWireReader
         return result;
     }
 
-    public static string ReadUtf8String(ReadOnlySpan<byte> data, ref int position)
+    public static string ReadUtf8String(in ReadOnlySpan<byte> data, ref int position)
     {
         uint len = ReadUInt32(data, ref position);
 

@@ -1,4 +1,4 @@
-namespace Credfeto.Keys.Server.Crypto;
+namespace Credfeto.Keys.Crypto;
 
 public enum SshSigVerificationResult
 {

@@ -1,13 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <DebuggerSupport>true</DebuggerSupport>
-    <Description>SSH Key Server - Server Tests</Description>
+    <Description>SSH Key Server - Services</Description>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>true</EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnablePackageValidation>true</EnablePackageValidation>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
@@ -21,35 +22,26 @@
     <IsTrimmable>true</IsTrimmable>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <LangVersion>latest</LangVersion>
+    <NeutralLanguage>en</NeutralLanguage>
     <NoWarn />
     <NuGetAudit>true</NuGetAudit>
-    <NuGetAuditLevel>high</NuGetAuditLevel>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
     <NuGetAuditMode>all</NuGetAuditMode>
     <Nullable>enable</Nullable>
     <OptimizationPreference>speed</OptimizationPreference>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <RunAOTCompilation>false</RunAOTCompilation>
     <TargetFramework>net11.0</TargetFramework>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <TieredCompilation>true</TieredCompilation>
     <TieredPGO>true</TieredPGO>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     <WarningsAsErrors />
   </PropertyGroup>
-  <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
-    <ProjectReference Include="../Credfeto.Keys.DataStore.FileSystem/Credfeto.Keys.DataStore.FileSystem.csproj" />
+    <ProjectReference Include="../Credfeto.Keys.Crypto/Credfeto.Keys.Crypto.csproj" />
     <ProjectReference Include="../Credfeto.Keys.DataStore.Interfaces/Credfeto.Keys.DataStore.Interfaces.csproj" />
-    <ProjectReference Include="../Credfeto.Keys.Server/Credfeto.Keys.Server.csproj" />
-    <ProjectReference Include="../Credfeto.Keys.Services/Credfeto.Keys.Services.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.4.5.2739" IncludeAssets="compile;runtime" />
-    <PackageReference Include="NSubstitute" Version="6.2.0" IncludeAssets="compile;runtime" />
-    <PackageReference Include="xunit.v3.aot.mtp-v2" Version="4.0.0" IncludeAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -57,10 +49,8 @@
     <PackageReference Include="Credfeto.Enumeration.Source.Generation" Version="1.2.142.1836" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="CSharpIsNullAnalyzer" Version="0.1.593" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.2.0.1978" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="FunFair.Test.Source.Generator" Version="6.4.5.2739" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="3.0.86" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6581" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Philips.CodeAnalysis.DuplicateCodeAnalyzer" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Philips.CodeAnalysis.MaintainabilityAnalyzers" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -70,6 +60,5 @@
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.25.0.139117" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="xunit.analyzers" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
