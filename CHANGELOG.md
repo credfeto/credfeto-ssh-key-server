@@ -36,6 +36,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SDK - Updated DotNet SDK to 10.0.401
 - Migrated to .NET 11 (SDK 11.0.100-rc.1, net11.0 target frameworks) with the Docker base image moved to runtime-deps:11.0-azurelinux3.0-distroless pinned by digest, InvariantGlobalization enabled, dropped package references now provided by the shared framework, and fixed analyzer findings (private constant naming, ordinal LastIndexOf)
 - Endpoint loggers are now created once at startup and injected as keyed singletons instead of being looked up from the logger factory on every request
+- TBD - to be finalized after review
 ### Deprecated
 ### Removed
 ### Deployment Changes
