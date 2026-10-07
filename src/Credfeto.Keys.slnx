@@ -6,6 +6,10 @@
     <File Path="../README.md" />
     <File Path="global.json" />
   </Folder>
+  <Project Path="Credfeto.Keys.Crypto/Credfeto.Keys.Crypto.csproj" />
+  <Project Path="Credfeto.Keys.Crypto.Tests/Credfeto.Keys.Crypto.Tests.csproj" />
+  <Project Path="Credfeto.Keys.Services/Credfeto.Keys.Services.csproj" />
+  <Project Path="Credfeto.Keys.Services.Tests/Credfeto.Keys.Services.Tests.csproj" />
   <Project Path="Credfeto.Keys.DataStore.Interfaces/Credfeto.Keys.DataStore.Interfaces.csproj" />
   <Project Path="Credfeto.Keys.DataStore.FileSystem/Credfeto.Keys.DataStore.FileSystem.csproj" />
   <Project Path="Credfeto.Keys.DataStore.FileSystem.Tests/Credfeto.Keys.DataStore.FileSystem.Tests.csproj" />

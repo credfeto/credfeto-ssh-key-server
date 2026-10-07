@@ -54,7 +54,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" IncludeAssets="compile;runtime" />
     <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.65.765" IncludeAssets="compile;runtime" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.8" IncludeAssets="compile;runtime" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.8" IncludeAssets="compile;runtime" />
@@ -101,5 +100,6 @@
   </Target>
   <ItemGroup>
     <ProjectReference Include="../Credfeto.Keys.DataStore.FileSystem/Credfeto.Keys.DataStore.FileSystem.csproj" />
+    <ProjectReference Include="../Credfeto.Keys.Services/Credfeto.Keys.Services.csproj" />
   </ItemGroup>
 </Project>

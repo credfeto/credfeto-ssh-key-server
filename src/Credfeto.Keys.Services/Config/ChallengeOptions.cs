@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Credfeto.Keys.Server.Config;
+namespace Credfeto.Keys.Services.Config;
 
 [DebuggerDisplay("TtlSeconds: {TtlSeconds}, Namespace: {SshNamespace}")]
 public sealed class ChallengeOptions

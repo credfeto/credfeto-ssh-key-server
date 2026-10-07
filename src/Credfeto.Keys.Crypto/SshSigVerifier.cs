@@ -6,7 +6,7 @@ using System.Text;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Signers;
 
-namespace Credfeto.Keys.Server.Crypto;
+namespace Credfeto.Keys.Crypto;
 
 public static class SshSigVerifier
 {
@@ -195,7 +195,7 @@ public static class SshSigVerifier
         byte[] innerSigBytes,
         byte[] sighashbuf,
         byte[] keyBytes,
-        ReadOnlySpan<byte> pkSpan,
+        in ReadOnlySpan<byte> pkSpan,
         int pkPos
     )
     {
@@ -233,7 +233,7 @@ public static class SshSigVerifier
             : SshSigVerificationResult.InvalidSignature;
     }
 
-    private static bool VerifyEd25519(ReadOnlySpan<byte> publicKey32, byte[] message, byte[] signature64)
+    private static bool VerifyEd25519(in ReadOnlySpan<byte> publicKey32, byte[] message, byte[] signature64)
     {
         if (publicKey32.Length != 32 || signature64.Length != 64)
         {

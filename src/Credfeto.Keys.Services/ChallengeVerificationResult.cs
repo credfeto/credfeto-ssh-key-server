@@ -1,4 +1,4 @@
-namespace Credfeto.Keys.Server.Services;
+namespace Credfeto.Keys.Services;
 
 public enum ChallengeVerificationResult
 {

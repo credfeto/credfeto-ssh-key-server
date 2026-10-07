@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using Credfeto.Keys.Server.Config;
-using Credfeto.Keys.Server.Services;
+using Credfeto.Keys.Services.Config;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Keys.Server.Tests;
+namespace Credfeto.Keys.Services.Tests;
 
 public sealed class ChallengeServiceTests : LoggingTestBase
 {
