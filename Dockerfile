@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-azurelinux3.0-distroless@sha256:52ae46799f8653ed855ae786ecf3d44e2a914708c755352c829ed1426ed9303a
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-azurelinux3.0-distroless@sha256:44897627d08bbea1df6799b0fb7139908e3808b9e719eaa4b6056125a1ea7086
 
 WORKDIR /usr/src/app
 
