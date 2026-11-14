@@ -19,9 +19,12 @@ public static class Program
     )]
     public static async Task<int> Main(string[] args)
     {
-        return HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl)
-            ? await HealthCheckClient.ExecuteAsync(targetUrl: checkUrl, cancellationToken: CancellationToken.None)
-            : await RunServerAsync(args);
+        if (HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl))
+        {
+            return await HealthCheckClient.ExecuteAsync(targetUrl: checkUrl, cancellationToken: CancellationToken.None);
+        }
+
+        return SelfTest.IsSelfTest(args) ? await SelfTest.RunAsync() : await RunServerAsync(args);
     }
 
     private static async ValueTask<int> RunServerAsync(string[] args)
@@ -32,7 +35,7 @@ public static class Program
 
         try
         {
-            await using (WebApplication app = ServerStartup.CreateApp(args))
+            await using (WebApplication app = ServerStartup.CreateApp(args: args, configurationOverrides: []))
             {
                 await RunAsync(app);
 

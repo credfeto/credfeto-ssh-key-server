@@ -1,10 +1,13 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-azurelinux3.0-distroless@sha256:191681f3fa05b40ebddbaee9fb090636cfa92beb3059ee01e4ee81fd5a2728fe
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled-extra@sha256:40550ff1ce9a725731cfb8340b3dc179170a55591de535d4fe39ffed7bfcc347
 
 WORKDIR /usr/src/app
 
 # Bundle App and basic config
 COPY Credfeto.Keys.Server .
 COPY appsettings.json .
+
+# Fail the build if the binary cannot load its native dependencies on this base image
+RUN [ "/usr/src/app/Credfeto.Keys.Server", "--self-test" ]
 
 EXPOSE 8080
 

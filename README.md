@@ -14,6 +14,23 @@ SSH key server built with .NET 10 and Kestrel. Stores and serves SSH public keys
 - [API Reference](docs/api.md)
 - [Configuration](docs/configuration.md)
 
+## Container Self-Test
+
+The server accepts a `--self-test` switch. When it is passed, the server:
+
+- builds the web application and its dependency injection container without starting it, so no ports are bound and no external connections are opened;
+- supplies placeholder values for required secrets (such as `Challenge:HmacSecret`), because none are available at image build time;
+- loads its native dependencies by looking up a culture and computing a hash and an HMAC;
+- exits with code `0` on success, or `1` if anything throws.
+
+The `Dockerfile` runs it straight after the published output is copied in:
+
+```dockerfile
+RUN [ "/usr/src/app/Credfeto.Keys.Server", "--self-test" ]
+```
+
+The exec form is required because the chiseled base image has no shell. A binary that cannot run on the base image (for example, one built against a newer glibc than the image provides) then fails `docker build` instead of failing when the container starts. Keep this `RUN` line, before `ENTRYPOINT`, as the default for new services, and change the base image only to one that passes it.
+
 ## Changelog
 
 View [changelog](CHANGELOG.md)
