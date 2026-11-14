@@ -61,9 +61,8 @@ public static class SelfTest
 
     private static void ExerciseGlobalisation()
     {
-        CultureInfo culture = CultureInfo.GetCultureInfo(name: "en-GB", predefinedOnly: false);
-
-        _ = DateTimeOffset.UnixEpoch.ToString(format: "D", formatProvider: culture);
+        // The server runs with InvariantGlobalization, so only the invariant culture is available.
+        _ = DateTimeOffset.UnixEpoch.ToString(format: "D", formatProvider: CultureInfo.InvariantCulture);
     }
 
     private static void ExerciseCryptography()
