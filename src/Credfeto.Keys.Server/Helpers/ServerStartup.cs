@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -58,13 +59,16 @@ internal static class ServerStartup
         Console.WriteLine($"Max worker threads {maxWorker}, Max IOC threads {maxIoc}");
     }
 
-    public static WebApplication CreateApp(string[] args)
+    public static WebApplication CreateApp(
+        string[] args,
+        IEnumerable<KeyValuePair<string, string?>> configurationOverrides
+    )
     {
         string configPath = ApplicationConfigLocator.ConfigurationFilesPath;
 
         return WebApplication
             .CreateSlimBuilder(args)
-            .ConfigureSettings(configPath)
+            .ConfigureSettings(configPath: configPath, configurationOverrides: configurationOverrides)
             .ConfigureServices()
             .ConfigureAppHost()
             .ConfigureWebHost(configPath)
@@ -176,14 +180,19 @@ internal static class ServerStartup
         return Debugger.IsAttached ? writeTo.Debug() : writeTo.Console();
     }
 
-    private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)
+    private static WebApplicationBuilder ConfigureSettings(
+        this WebApplicationBuilder builder,
+        string configPath,
+        IEnumerable<KeyValuePair<string, string?>> configurationOverrides
+    )
     {
         builder.Configuration.Sources.Clear();
         builder
             .Configuration.SetBasePath(configPath)
             .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
             .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
-            .AddEnvironmentVariables();
+            .AddEnvironmentVariables()
+            .AddInMemoryCollection(configurationOverrides);
 
         return builder;
     }
