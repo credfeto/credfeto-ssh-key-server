@@ -37,7 +37,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Endpoint loggers are now created once at startup and injected as keyed singletons instead of being looked up from the logger factory on every request
 - Updated to .NET 11 rc.3 SDK and enabled runtime-async
 - SDK - Updated DotNet SDK to 11.0.100
-- Moved Docker runtime image to resolute (Ubuntu 26.04) base and added build-time --self-test
+- Docker runtime image moved to the resolute (Ubuntu 26.04) chiseled-extra base, and the server now runs a build-time --self-test during docker build so a broken image fails the build (#48)
 ### Deprecated
 ### Removed
 ### Deployment Changes
