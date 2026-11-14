@@ -24,7 +24,7 @@ using Serilog.Core;
 
 namespace Credfeto.Keys.Server.Helpers;
 
-internal static class ServerStartup
+public static class ServerStartup
 {
 #if DEBUG
     private const int HTTP_PORT = 9080;
@@ -59,7 +59,7 @@ internal static class ServerStartup
         Console.WriteLine($"Max worker threads {maxWorker}, Max IOC threads {maxIoc}");
     }
 
-    public static WebApplication CreateApp(
+    internal static WebApplication CreateApp(
         string[] args,
         IEnumerable<KeyValuePair<string, string?>> configurationOverrides
     )
@@ -92,9 +92,7 @@ internal static class ServerStartup
             .AddSingleton(TimeProvider.System)
             .AddFileSystemKeyStorage()
             .AddKeyServices()
-            .ConfigureHttpJsonOptions(options =>
-                options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
-            );
+            .AddAppJsonSerialization();
 
         builder
             .Services.AddOptions<ChallengeOptions>()
@@ -106,6 +104,13 @@ internal static class ServerStartup
             .ValidateOnStart();
 
         return builder;
+    }
+
+    public static IServiceCollection AddAppJsonSerialization(this IServiceCollection services)
+    {
+        return services.ConfigureHttpJsonOptions(static options =>
+            options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
+        );
     }
 
     private static bool IsValidHmacSecret(string? secret)
