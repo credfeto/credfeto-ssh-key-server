@@ -15,8 +15,6 @@ namespace Credfeto.Keys.Services;
 
 public sealed partial class KeyManagementService : IKeyManagementService
 {
-    private const int CHALLENGE_VALIDITY_SECONDS = 300;
-
     private static readonly string[] ValidKeyTypes = ["ssh-ed25519", "sk-ssh-ed25519@openssh.com"];
 
     private readonly IChallengeService _challengeService;
@@ -261,7 +259,7 @@ public sealed partial class KeyManagementService : IKeyManagementService
         return new(
             Token: token,
             Namespace: this._challengeService.SshNamespace,
-            ValidUntil: this._timeProvider.GetUtcNow().AddSeconds(CHALLENGE_VALIDITY_SECONDS)
+            ValidUntil: this._timeProvider.GetUtcNow().Add(this._challengeService.Ttl)
         );
     }
 

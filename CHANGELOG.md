@@ -30,6 +30,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SSH signature verification incorrectly rejected every legitimately valid public key due to a wire-format comparison bug
 - Ed25519 SSH signature verification is now implemented correctly using BouncyCastle.Cryptography; the previous implementation used System.Security.Cryptography.ECDsa, which has no support for Ed25519/EdDSA, so every genuine signature verification failed (#32)
 - Updated csproj package references to satisfy FunFair.BuildCheck policy after the .NET SDK 10.0.401 bump - added IncludeAssets to PackageReference entries, normalized ProjectReference paths to forward slashes, and switched test projects from xunit.v3.mtp-v2 to xunit.v3.aot.mtp-v2 4.0.0, bumping xunit.analyzers to 2.0.0, FunFair.Test.Common and FunFair.Test.Source.Generator to 6.4.5.2739, NSubstitute to 6.2.0, and Microsoft.Extensions.TimeProvider.Testing to 10.9.0 to resolve the resulting NuGet downgrade conflicts, and adding a using directive for FunFair.Test.Infrastructure where AddMockedService now lives
+- Challenge ValidUntil for add and delete challenges now uses the configured Challenge:TtlSeconds instead of a hardcoded 300 seconds, so challenge expiry follows the server's configured TTL (#18)
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 - Corrected docs/api.md to describe the challenge-response authentication flow

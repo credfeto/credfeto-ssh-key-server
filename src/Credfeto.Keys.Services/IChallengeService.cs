@@ -6,6 +6,8 @@ public interface IChallengeService
 {
     string SshNamespace { get; }
 
+    TimeSpan Ttl { get; }
+
     string GenerateAddChallenge(string host, string user);
 
     string GenerateDeleteChallenge(string host, string user, Guid keyId);

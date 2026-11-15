@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Buffers.Text;
 using System.Globalization;
@@ -21,7 +21,6 @@ public sealed class ChallengeService : IChallengeService
 
     private readonly byte[] _secretKey;
     private readonly TimeProvider _timeProvider;
-    private readonly TimeSpan _ttl;
     private readonly ILogger<ChallengeService> _logger;
 
     public ChallengeService(
@@ -41,11 +40,13 @@ public sealed class ChallengeService : IChallengeService
         }
 
         this._secretKey = Convert.FromBase64String(opts.HmacSecret);
-        this._ttl = TimeSpan.FromSeconds(opts.TtlSeconds);
+        this.Ttl = TimeSpan.FromSeconds(opts.TtlSeconds);
         this.SshNamespace = opts.SshNamespace;
     }
 
     public string SshNamespace { get; }
+
+    public TimeSpan Ttl { get; }
 
     public string GenerateAddChallenge(string host, string user)
     {
@@ -200,7 +201,7 @@ public sealed class ChallengeService : IChallengeService
 
         DateTimeOffset issued = DateTimeOffset.FromUnixTimeMilliseconds(unixMs);
 
-        if (this._timeProvider.GetUtcNow() - issued > this._ttl)
+        if (this._timeProvider.GetUtcNow() - issued > this.Ttl)
         {
             return (ChallengeVerificationResult.Expired, null);
         }
