@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using Credfeto.Keys.Services.Config;
@@ -27,14 +27,14 @@ public sealed class ChallengeServiceTests : LoggingTestBase
         return token.LastIndexOf(value: '.', comparisonType: StringComparison.Ordinal) + 1;
     }
 
-    private IChallengeService CreateService(FakeTimeProvider? timeProvider = null)
+    private IChallengeService CreateService(FakeTimeProvider? timeProvider = null, int ttlSeconds = 300)
     {
         IOptions<ChallengeOptions> options = GetSubstitute<IOptions<ChallengeOptions>>();
         options.Value.Returns(
             new ChallengeOptions
             {
                 HmacSecret = Convert.ToBase64String(Secret),
-                TtlSeconds = 300,
+                TtlSeconds = ttlSeconds,
                 SshNamespace = "ssh-key-server-v1",
             }
         );
@@ -326,5 +326,27 @@ public sealed class ChallengeServiceTests : LoggingTestBase
         IChallengeService service = this.CreateService();
 
         Assert.Equal(expected: "ssh-key-server-v1", actual: service.SshNamespace);
+    }
+
+    [Fact]
+    public void TtlMatchesConfiguration()
+    {
+        IChallengeService service = this.CreateService(ttlSeconds: 60);
+
+        Assert.Equal(expected: TimeSpan.FromSeconds(60), actual: service.Ttl);
+    }
+
+    [Fact]
+    public void AddChallengeFailsWhenOlderThanConfiguredTtl()
+    {
+        FakeTimeProvider timeProvider = new();
+        IChallengeService service = this.CreateService(timeProvider: timeProvider, ttlSeconds: 60);
+        string token = service.GenerateAddChallenge(host: HOST, user: USER);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(61));
+
+        ChallengeVerificationResult result = service.VerifyAddChallenge(host: HOST, user: USER, token: token);
+
+        Assert.Equal(expected: ChallengeVerificationResult.Expired, actual: result);
     }
 }
