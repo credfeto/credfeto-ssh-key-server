@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -23,7 +24,7 @@ using Serilog.Core;
 
 namespace Credfeto.Keys.Server.Helpers;
 
-internal static class ServerStartup
+public static class ServerStartup
 {
 #if DEBUG
     private const int HTTP_PORT = 9080;
@@ -58,13 +59,16 @@ internal static class ServerStartup
         Console.WriteLine($"Max worker threads {maxWorker}, Max IOC threads {maxIoc}");
     }
 
-    public static WebApplication CreateApp(string[] args)
+    internal static WebApplication CreateApp(
+        string[] args,
+        IEnumerable<KeyValuePair<string, string?>> configurationOverrides
+    )
     {
         string configPath = ApplicationConfigLocator.ConfigurationFilesPath;
 
         return WebApplication
             .CreateSlimBuilder(args)
-            .ConfigureSettings(configPath)
+            .ConfigureSettings(configPath: configPath, configurationOverrides: configurationOverrides)
             .ConfigureServices()
             .ConfigureAppHost()
             .ConfigureWebHost(configPath)
@@ -88,9 +92,7 @@ internal static class ServerStartup
             .AddSingleton(TimeProvider.System)
             .AddFileSystemKeyStorage()
             .AddKeyServices()
-            .ConfigureHttpJsonOptions(options =>
-                options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
-            );
+            .AddAppJsonSerialization();
 
         builder
             .Services.AddOptions<ChallengeOptions>()
@@ -102,6 +104,13 @@ internal static class ServerStartup
             .ValidateOnStart();
 
         return builder;
+    }
+
+    public static IServiceCollection AddAppJsonSerialization(this IServiceCollection services)
+    {
+        return services.ConfigureHttpJsonOptions(static options =>
+            options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
+        );
     }
 
     private static bool IsValidHmacSecret(string? secret)
@@ -176,14 +185,19 @@ internal static class ServerStartup
         return Debugger.IsAttached ? writeTo.Debug() : writeTo.Console();
     }
 
-    private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)
+    private static WebApplicationBuilder ConfigureSettings(
+        this WebApplicationBuilder builder,
+        string configPath,
+        IEnumerable<KeyValuePair<string, string?>> configurationOverrides
+    )
     {
         builder.Configuration.Sources.Clear();
         builder
             .Configuration.SetBasePath(configPath)
             .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
             .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
-            .AddEnvironmentVariables();
+            .AddEnvironmentVariables()
+            .AddInMemoryCollection(configurationOverrides);
 
         return builder;
     }
