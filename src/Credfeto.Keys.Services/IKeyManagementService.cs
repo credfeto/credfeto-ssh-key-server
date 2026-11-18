@@ -34,4 +34,27 @@ public interface IKeyManagementService
         string signature,
         CancellationToken cancellationToken
     );
+
+    ValueTask<AdminKeyResult> AdminListKeysAsync(string host, string user, CancellationToken cancellationToken);
+
+    ValueTask<AdminKeyResult> AdminAddKeyAsync(
+        string host,
+        string user,
+        string keyLine,
+        CancellationToken cancellationToken
+    );
+
+    ValueTask<AdminKeyResult> AdminDeleteKeyAsync(
+        string host,
+        string user,
+        string keyLine,
+        CancellationToken cancellationToken
+    );
+
+    ValueTask<AdminKeyResult> AdminDeleteKeyByFingerprintAsync(
+        string host,
+        string user,
+        string fingerprint,
+        CancellationToken cancellationToken
+    );
 }

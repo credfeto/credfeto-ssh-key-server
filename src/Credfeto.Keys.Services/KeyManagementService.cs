@@ -15,6 +15,9 @@ namespace Credfeto.Keys.Services;
 
 public sealed partial class KeyManagementService : IKeyManagementService
 {
+    private const string FINGERPRINT_PREFIX = "SHA256:";
+    private const string INVALID_FINGERPRINT = "(invalid-key-data)";
+
     private static readonly string[] ValidKeyTypes = ["ssh-ed25519", "sk-ssh-ed25519@openssh.com"];
 
     private readonly IChallengeService _challengeService;
@@ -223,6 +226,195 @@ public sealed partial class KeyManagementService : IKeyManagementService
         );
 
         return removed ? KeyManagementStatus.Success : KeyManagementStatus.NotFound;
+    }
+
+    public async ValueTask<AdminKeyResult> AdminListKeysAsync(
+        string host,
+        string user,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!IsValidHostAndUser(host: host, user: user))
+        {
+            return AdminKeyResult.Failed(KeyManagementStatus.InvalidRequest);
+        }
+
+        IReadOnlyList<SshPublicKey> keys = await this._store.GetKeysAsync(
+            host: host,
+            username: user,
+            cancellationToken: cancellationToken
+        );
+
+        return AdminKeyResult.Completed(status: KeyManagementStatus.Success, keys: [.. keys.Select(ToAdminKeyEntry)]);
+    }
+
+    public async ValueTask<AdminKeyResult> AdminAddKeyAsync(
+        string host,
+        string user,
+        string keyLine,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!IsValidHostAndUser(host: host, user: user))
+        {
+            return AdminKeyResult.Failed(KeyManagementStatus.InvalidRequest);
+        }
+
+        if (
+            !TryParseKeyLine(
+                keyLine: keyLine.Trim(),
+                keyType: out string keyType,
+                keyData: out string keyData,
+                comment: out string comment
+            )
+        )
+        {
+            return AdminKeyResult.Failed(KeyManagementStatus.InvalidKey);
+        }
+
+        IReadOnlyList<SshPublicKey> keys = await this._store.GetKeysAsync(
+            host: host,
+            username: user,
+            cancellationToken: cancellationToken
+        );
+
+        SshPublicKey? existing = keys.FirstOrDefault(key => IsSameKey(key: key, keyType: keyType, keyData: keyData));
+
+        if (existing is not null)
+        {
+            return AdminKeyResult.Completed(
+                status: KeyManagementStatus.AlreadyExists,
+                keys: [ToAdminKeyEntry(existing)]
+            );
+        }
+
+        SshPublicKey added = await this._store.AddKeyAsync(
+            host: host,
+            username: user,
+            keyType: keyType,
+            keyData: keyData,
+            comment: comment,
+            cancellationToken: cancellationToken
+        );
+
+        return AdminKeyResult.Completed(status: KeyManagementStatus.Success, keys: [ToAdminKeyEntry(added)]);
+    }
+
+    public ValueTask<AdminKeyResult> AdminDeleteKeyAsync(
+        string host,
+        string user,
+        string keyLine,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!IsValidHostAndUser(host: host, user: user))
+        {
+            return ValueTask.FromResult(AdminKeyResult.Failed(KeyManagementStatus.InvalidRequest));
+        }
+
+        if (
+            !TryParseKeyLine(
+                keyLine: keyLine.Trim(),
+                keyType: out string keyType,
+                keyData: out string keyData,
+                comment: out _
+            )
+        )
+        {
+            return ValueTask.FromResult(AdminKeyResult.Failed(KeyManagementStatus.InvalidKey));
+        }
+
+        return this.RemoveMatchingKeysAsync(
+            host: host,
+            user: user,
+            isMatch: key => IsSameKey(key: key, keyType: keyType, keyData: keyData),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public ValueTask<AdminKeyResult> AdminDeleteKeyByFingerprintAsync(
+        string host,
+        string user,
+        string fingerprint,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!IsValidHostAndUser(host: host, user: user))
+        {
+            return ValueTask.FromResult(AdminKeyResult.Failed(KeyManagementStatus.InvalidRequest));
+        }
+
+        string wanted = fingerprint.Trim();
+
+        if (!wanted.StartsWith(value: FINGERPRINT_PREFIX, comparisonType: StringComparison.Ordinal))
+        {
+            return ValueTask.FromResult(AdminKeyResult.Failed(KeyManagementStatus.InvalidKey));
+        }
+
+        return this.RemoveMatchingKeysAsync(
+            host: host,
+            user: user,
+            isMatch: key => StringComparer.Ordinal.Equals(x: GetFingerprint(key.KeyData), y: wanted),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async ValueTask<AdminKeyResult> RemoveMatchingKeysAsync(
+        string host,
+        string user,
+        Func<SshPublicKey, bool> isMatch,
+        CancellationToken cancellationToken
+    )
+    {
+        IReadOnlyList<SshPublicKey> keys = await this._store.GetKeysAsync(
+            host: host,
+            username: user,
+            cancellationToken: cancellationToken
+        );
+
+        List<AdminKeyEntry> removed = [];
+
+        foreach (SshPublicKey key in keys.Where(isMatch))
+        {
+            bool wasRemoved = await this._store.RemoveKeyAsync(
+                host: host,
+                username: user,
+                keyId: key.KeyId,
+                cancellationToken: cancellationToken
+            );
+
+            if (wasRemoved)
+            {
+                removed.Add(ToAdminKeyEntry(key));
+            }
+        }
+
+        return removed.Count == 0
+            ? AdminKeyResult.Failed(KeyManagementStatus.NotFound)
+            : AdminKeyResult.Completed(status: KeyManagementStatus.Success, keys: removed);
+    }
+
+    private static bool IsSameKey(SshPublicKey key, string keyType, string keyData)
+    {
+        return StringComparer.Ordinal.Equals(x: key.KeyType, y: keyType)
+            && StringComparer.Ordinal.Equals(x: key.KeyData, y: keyData);
+    }
+
+    private static AdminKeyEntry ToAdminKeyEntry(SshPublicKey key)
+    {
+        return new(
+            KeyId: key.KeyId,
+            Fingerprint: GetFingerprint(key.KeyData),
+            KeyType: key.KeyType,
+            Comment: key.Comment
+        );
+    }
+
+    private static string GetFingerprint(string keyData)
+    {
+        return SshKeyFingerprint.TryCompute(keyData: keyData, out string? fingerprint)
+            ? fingerprint
+            : INVALID_FINGERPRINT;
     }
 
     private bool IsValidSignature(

@@ -8,4 +8,5 @@ public enum KeyManagementStatus
     InvalidKey,
     InvalidSignature,
     NotFound,
+    AlreadyExists,
 }
