@@ -18,7 +18,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Restriction to ed25519 and sk-ssh-ed25519 key types only
 - Script (tools/generate-dev-cert.sh) to generate a self-signed TLS certificate for localhost and trust it on Arch Linux and Debian/Ubuntu-based systems
 - Unhandled exceptions are now caught, logged with the request method/path, and returned as a JSON error body instead of an empty response with no diagnostic information
-- Admin CLI subcommands (add, delete, list) for managing authorised keys from the command line - #50
+- Admin CLI subcommands (add, delete, list) for managing authorised SSH keys from the command line on Credfeto.Keys.Server, so operators can administer keys without editing the store by hand - #50
 ### Fixed
 - Corrected broken cross-reference in github-workflows.instructions.md — anchor #visual-indicators updated to #output-helpers to match actual section name in shell-scripts.instructions.md
 - shell.firewall.examples.md open_port_for_private_networks no longer calls firewall-cmd --reload internally; added explicit caller-reload rule to shell.firewall.instructions.md
