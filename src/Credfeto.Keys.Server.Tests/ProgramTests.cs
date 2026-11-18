@@ -21,4 +21,12 @@ public sealed class ProgramTests : TestBase
 
         Assert.NotEqual(expected: 0, actual: exitCode);
     }
+
+    [Fact]
+    public async Task AdminCommandWithoutRequiredOptionsIsUsageErrorAsync()
+    {
+        int exitCode = await Program.Main(["list"]);
+
+        Assert.Equal(expected: 2, actual: exitCode);
+    }
 }

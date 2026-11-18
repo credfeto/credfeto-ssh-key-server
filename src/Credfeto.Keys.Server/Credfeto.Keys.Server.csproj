@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
@@ -90,6 +91,11 @@
     <!-- IL2104: ASP.NET Core and framework assemblies are not yet fully trim/AOT-annotated;
          suppress per-assembly aggregate warnings in NativeAOT builds. -->
     <IlcArg Include="--nowarn:IL2104" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Bind the libc calls used by the admin CLI's key store ownership check at link time, because
+         the chiseled base image has libc.so.6 but not the libc.so name a runtime lookup would probe. -->
+    <DirectPInvoke Include="libc" />
   </ItemGroup>
   <!-- IL2104: suppress the "assembly produced trim warnings" aggregate warning for framework
        assemblies during ILLink (trimmed-publish) builds. This is applied here in a target so

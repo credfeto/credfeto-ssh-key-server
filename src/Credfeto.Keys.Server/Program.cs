@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Docker.HealthCheck.Http.Client;
+using Credfeto.Keys.Server.Cli;
 using Credfeto.Keys.Server.Helpers;
 using Microsoft.AspNetCore.Builder;
 
@@ -22,6 +23,11 @@ public static class Program
         if (HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl))
         {
             return await HealthCheckClient.ExecuteAsync(targetUrl: checkUrl, cancellationToken: CancellationToken.None);
+        }
+
+        if (AdminCommandParser.IsAdminCommand(args))
+        {
+            return await AdminCommandRunner.RunAsync(args);
         }
 
         return SelfTest.IsSelfTest(args) ? await SelfTest.RunAsync() : await RunServerAsync(args);
